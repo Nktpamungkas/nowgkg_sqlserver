@@ -1,0 +1,14 @@
+RewriteEngine On
+
+RewriteRule ^login$ login.php [L]
+RewriteRule ^lockscreen$ lockscreen.php [L]
+RewriteRule ^logout$ login.php?act=logout [L]
+RewriteRule ^DetailOpname-$ index.php?p=DetailOpname[L]
+RewriteRule ^DetailOpname-([a-zA-Z0-9_-]+)$ index.php?p=DetailOpname&tgl=$1 [L]
+RewriteRule ^CetakIdenBagiKain-$ index.php?p=CetakIdenBagiKain[L]
+RewriteRule ^CetakIdenBagiKain-([a-zA-Z0-9_-]+)$ index.php?p=CetakIdenBagiKain&demand=$1 [L]
+RewriteRule ^DelOpname-([a-zA-Z0-9_-]+)$ index.php?p=DelOpname&tgl=$1 [L]
+RewriteRule ^([a-zA-Z0-9_-]+)$ index.php?p=$1 [L]
+RewriteRule ^([a-zA-Z0-9_-]+)/$ index.php?p=$1 [L]
+
+Options All -Indexes

@@ -3,6 +3,7 @@ $ProdOrder 	= isset($_POST['prod_order']) ? $_POST['prod_order'] : '';
 $ProdDemand = isset($_POST['prod_demand']) ? $_POST['prod_demand'] : '';	    	 
 	
 ?>
+
 <!-- Main content -->
       <div class="container-fluid">
 		<form role="form" method="post" enctype="multipart/form-data" name="form1">

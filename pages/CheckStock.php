@@ -1,4 +1,7 @@
 <?php
+include "./utils/helper.php";
+?>
+<?php
 $Zone = isset($_POST['zone']) ? $_POST['zone'] : '';
 $Lokasi = isset($_POST['lokasi']) ? $_POST['lokasi'] : '';
 $Barcode = substr($_POST['barcode'], -13);
@@ -280,7 +283,7 @@ if ($_POST['cek'] == "Cek" or $_POST['cari'] == "Cari") {
               <td style="text-align: center"><?php echo $rowd1['KG']; ?></td>
               <td style="text-align: center"><?php echo $rowd1['zone'] . "-" . $rowd1['lokasi']; ?></td>
               <td style="text-align: center"><?php echo $rowd1['lokasi_asli']; ?></td>
-              <td style="text-align: center"><?php echo $tglmsk; ?></td>
+              <td style="text-align: center"><?php echo cek($tglmsk); ?></td>
               <td style="text-align: center"><small
                   class='badge <?php if ($rowd1['status'] == "tidak ok") {
                     echo "badge-warning";

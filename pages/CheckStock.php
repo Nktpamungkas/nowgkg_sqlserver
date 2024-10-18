@@ -20,7 +20,7 @@ if($_POST['cek']=="Cek" or $_POST['cari']=="Cari"){
 	if($ck['jml']>0){		
 	$sqlData=sqlsrv_query($con,"UPDATE dbnow_gkg.tbl_stokfull SET 
 		  status='ok',
-		  tgl_cek=now()
+		  tgl_cek=GETDATE()
 		  WHERE zone='$Zone' AND lokasi='$Lokasi' AND SN='$Barcode'");
 		}else{
 	$sqlDB21 = " SELECT WHSLOCATIONWAREHOUSEZONECODE, WAREHOUSELOCATIONCODE, CREATIONDATETIME,BASEPRIMARYQUANTITYUNIT FROM 
@@ -42,7 +42,7 @@ if($_POST['cek']=="Cek" or $_POST['cari']=="Cari"){
 		  zone='$Zone',
 		  SN='$Barcode',
 		  tgl_masuk='$tglMasuk',
-		  tgl_cek=now()");	
+		  tgl_cek=GETDATE()");	
 		}
 	}
 	//}else{

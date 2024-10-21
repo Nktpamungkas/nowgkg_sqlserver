@@ -370,7 +370,7 @@ $rowdb210 = db2_fetch_assoc($stmt10);
               $stmt5   = db2_exec($conn1, $sqlDB25, array('cursor' => DB2_SCROLLABLE));
               $rowdb25 = db2_fetch_assoc($stmt5);
 
-              $sqlDB26 = "SELECT
+             $sqlDB26 = "SELECT
                             QUALITYDOCLINE.VALUEQUANTITY AS LEBAR1,
                             GSM.VALUEQUANTITY AS GSM1
                           FROM
@@ -428,8 +428,8 @@ $rowdb210 = db2_fetch_assoc($stmt10);
                           AND a.NAMENAME = 'GSM'
                           LEFT OUTER JOIN STOCKTRANSACTION s ON s.ITEMELEMENTCODE = e.ELEMENTCODE
                           WHERE
-                          s.ORDERCODE = '" . $rowdb21[' PROVISIONALCODE '] . "'
-                          AND s.ORDERLINE = '" . $rowdb21[' ORDERLINE '] . "'
+                          s.ORDERCODE = '$rowdb21[PROVISIONALCODE]'
+                          AND s.ORDERLINE =  '$rowdb21[ORDERLINE]'
                           GROUP BY
                           s.ORDERCODE,
                           s.ORDERLINE,
@@ -462,11 +462,11 @@ $rowdb210 = db2_fetch_assoc($stmt10);
                                                 } ?></td>
                 <td style="text-align: left"><span style="text-align: center">
                     <?php if ($rowdb26['LEBAR1'] != "") {
-                      echo round($rowdb26['LEBAR1']);
+                      echo round($rowdb26['LEBAR1']); 
                     } else if ($rowdb27['LEBAR1'] != "") {
                       echo round($rowdb27['LEBAR1']);
                     } else {
-                      echo round($rowdb30['LEBAR1']);
+                      echo round($rowdb30['LEBAR1']); 
                     } ?>
                   </span></td>
                 <td style="text-align: left"><span style="text-align: center">

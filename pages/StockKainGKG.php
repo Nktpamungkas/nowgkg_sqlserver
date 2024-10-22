@@ -103,9 +103,9 @@ $Awal  = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
                                         benang_3,
                                         benang_4 ORDER BY id ASC ");
             while ($r = sqlsrv_fetch_array($sql)) {
-              $sql1 = sqlsrv_query($con1, " SELECT SUM(berat) AS KGs,  STRING_AGG(CONCAT(no_bon, ':', berat), ' ') AS no_bon
-              FROM dbknitt.tbl_pembagian_greige_now WHERE no_po ='$r[proj_awal] ' AND no_artikel='$r[no_item]' ");
-              $r1 = sqlsrv_fetch_array($sql1);
+              $sql1 = mysqli_query($con1," SELECT sum(berat) as KGs, group_concat(no_bon,':',berat,' ') as no_bon  
+                                          FROM dbknitt.tbl_pembagian_greige_now where no_po ='".$r['proj_awal']."' and no_artikel='".$r['no_item']."' ");		  
+                                          $r1 = mysqli_fetch_array($sql1);
               $sqlDB210 = " 
                 SELECT SUM(a.BASEPRIMARYQUANTITY) AS BASEPRIMARYQUANTITY, SUM(a3.VALUEDECIMAL) AS QTYSALIN  FROM ITXVIEWHEADERKNTORDER a
                 LEFT OUTER JOIN PRODUCTIONDEMAND p ON p.CODE =a.PRODUCTIONDEMANDCODE

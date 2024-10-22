@@ -93,7 +93,6 @@ $Awal = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
                                             AND (TRIM(TRANSACTIONDATE) || ' ' || TRIM(TRANSACTIONTIME) BETWEEN '$tanggal_waktu1' AND '$tanggal_waktu2') 
                                             $WhereUser";
                             $stmt = db2_exec($conn1, $queryDB2, array('cursor' => DB2_SCROLLABLE));
-
                             $totalQuality = 0;
                             $totalBasePrimaryQuantity = 0;
                             while ($rowdb2 = db2_fetch_assoc($stmt)) {
@@ -165,17 +164,19 @@ $Awal = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
                                         <td><?= $rowdb21['CREATIONUSER'] ?></td>
                                         <td><?= $rowdb21['SEBELUM'] ?></td>
                                         <td><?= $rowdb21['SESUDAH'] ?></td>
-                                        <td><?= $rowdb21['NUMBEROFPIECES'] ?? 1 ?></td>
+                                        <td><?= $Quality = 1 ?></td>
                                         <td><?= $rowdb21['LOTCODE'] ?></td>
                                         <td><?= $rowdb21['ITEMELEMENTCODE'] ?></td>
                                         <td><?= $rowdb21['BASEPRIMARYQUANTITY'] ?></td>
                                     </tr>
                             <?php
-                                        }
-                                        $totalQuality += $rowdb21['NUMBEROFPIECES'] ?? 1;
-                                        $totalBasePrimaryQuantity += $rowdb21['BASEPRIMARYQUANTITY'];
+                                     }else{
+                                        $Quality = 0;
                                     }
+                                    $totalQuality += $Quality;
+                                    $totalBasePrimaryQuantity += $rowdb21['BASEPRIMARYQUANTITY'];
                                 }
+                            }
                             ?>
                 </tbody>
                 <tfoot>

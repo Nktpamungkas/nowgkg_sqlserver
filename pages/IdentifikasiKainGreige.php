@@ -316,7 +316,7 @@ $rowdb210 = db2_fetch_assoc($stmt10);
                               AND PRODUCTIONORDERCODE = '$rowdb21[EXTERNALREFERENCE]'";
               $stmt3   = db2_exec($conn1, $sqlDB23, array('cursor' => DB2_SCROLLABLE));
               $rowdb23 = db2_fetch_assoc($stmt3);
-              ECHO $sqlDB24 = "SELECT
+              $sqlDB24 = "SELECT
                             LISTAGG (
                               DISTINCT TRIM(BLKOKASI.WAREHOUSELOCATIONCODE),
                               ', '

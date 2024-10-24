@@ -78,77 +78,87 @@ $Awal  = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
             $no = 1;
             $c = 0;
             $QTPR = 0;
-            $sql = sqlsrv_query($con, " SELECT 
-                                        id,
-                                        langganan,
-                                        buyer,
-                                        proj_akhir,
-                                        proj_awal,
-                                        lot,
-                                        tipe,
-                                        no_item,
-                                        benang_1,
-                                        benang_2,
-                                        benang_3,
-                                        benang_4,
-                                        SUM(weight) AS kgs, SUM(rol) AS roll FROM dbnow_gkg.tblopname WHERE tgl_tutup = '2024-08-01' GROUP BY  id,   langganan,
-                                        buyer,
-                                        proj_akhir,
-                                        proj_awal,
-                                        lot,
-                                        tipe,
-                                        no_item,
-                                        benang_1,
-                                        benang_2,
-                                        benang_3,
-                                        benang_4 ORDER BY id ASC ");
+            
+            // Ini query utama, udah disesuain supaya sama, tapi coba cek lagi 
+            $sql = sqlsrv_query($con, "SELECT
+                                                      MIN(id) as id,
+                                                      trim(proj_awal)as proj_awal ,
+                                                      TRIM(no_item)as no_item,
+                                                      MAX(langganan) AS langganan,
+                                                      MAX(buyer) AS buyer,
+                                                      MAX(lot) AS lot,
+                                                      MAX(tipe) AS tipe,
+                                                      MAX(benang_1) AS benang_1,
+                                                      MAX(benang_2) AS benang_2,
+                                                      MAX(benang_3) AS benang_3,
+                                                      MAX(benang_4) AS benang_4,
+                                                      SUM(weight) AS kgs,
+                                                      SUM(rol) AS roll
+                                                  FROM
+                                                      dbnow_gkg.dbnow_gkg.tblopname
+                                                  WHERE
+                                                      tgl_tutup = '$Awal'
+                                                  GROUP BY
+                                                      proj_awal,
+                                                      no_item
+                                                  Order by id asc");
+            // End Query utama
+
             while ($r = sqlsrv_fetch_array($sql)) {
-              $sql1 = mysqli_query($con1," SELECT sum(berat) as KGs, group_concat(no_bon,':',berat,' ') as no_bon  
-                                          FROM dbknitt.tbl_pembagian_greige_now where no_po ='".$r['proj_awal']."' and no_artikel='".$r['no_item']."' ");		  
+              $sql1 = mysqli_query($con1,"SELECT sum(berat) as KGs, group_concat(no_bon,':',berat,' ') as no_bon  
+                                          FROM dbknitt.tbl_pembagian_greige_now where no_po ='$r[proj_awal]' and no_artikel='$r[no_item]' 
+                                          ");		  
                                           $r1 = mysqli_fetch_array($sql1);
-              $sqlDB210 = " 
-                SELECT SUM(a.BASEPRIMARYQUANTITY) AS BASEPRIMARYQUANTITY, SUM(a3.VALUEDECIMAL) AS QTYSALIN  FROM ITXVIEWHEADERKNTORDER a
+
+              // Query penyebab lemot
+              $sqlDB210 = "SELECT SUM(a.BASEPRIMARYQUANTITY) AS BASEPRIMARYQUANTITY, SUM(a3.VALUEDECIMAL) AS QTYSALIN  FROM ITXVIEWHEADERKNTORDER a
                 LEFT OUTER JOIN PRODUCTIONDEMAND p ON p.CODE =a.PRODUCTIONDEMANDCODE
                 LEFT OUTER JOIN ADSTORAGE a2 ON p.ABSUNIQUEID =a2.UNIQUEID AND a2.NAMENAME ='StatusRMP'
                 LEFT OUTER JOIN ADSTORAGE a3 ON p.ABSUNIQUEID =a3.UNIQUEID AND a3.NAMENAME ='QtySalin'
-                WHERE a.ITEMTYPEAFICODE ='KGF' AND (a.PROJECTCODE ='" . trim($r['proj_awal']) . "' OR a.ORIGDLVSALORDLINESALORDERCODE ='" . trim($r['proj_awal']) . "') AND
+                WHERE a.ITEMTYPEAFICODE ='KGF' AND (a.PROJECTCODE ='$r[proj_awal]' OR a.ORIGDLVSALORDLINESALORDERCODE ='$r[proj_awal]') AND
                 (a.PROGRESSSTATUS='2' OR a.PROGRESSSTATUS='6') AND (NOT a2.VALUESTRING ='3' OR a2.VALUESTRING IS NULL) AND 
-                CONCAT(TRIM(a.SUBCODE02),CONCAT(TRIM(a.SUBCODE03),CONCAT(' ',TRIM(a.SUBCODE04))))='" . trim($r['no_item']) . "'
+                CONCAT(TRIM(a.SUBCODE02),CONCAT(TRIM(a.SUBCODE03),CONCAT(' ',TRIM(a.SUBCODE04))))='$r[no_item]'
                 GROUP BY a.SUBCODE02,a.SUBCODE03,a.SUBCODE04";
+              // End Query
+
               $stmt10   = db2_exec($conn1, $sqlDB210, array('cursor' => DB2_SCROLLABLE));
               $rowdb210 = db2_fetch_assoc($stmt10);
+              
+              // Penyebab lemotnya ini karena di tiap rownya harus ngebaca ulang ini
+              // Mungkin solusinya bisa buat query kepisah untuk ambil value qtpr
               $QTPR = $rowdb210['BASEPRIMARYQUANTITY'] - $rowdb210['QTYSALIN'];
-              $sqlDB211 = "
-SELECT SUM(STOCKTRANSACTION.BASEPRIMARYQUANTITY) AS QTY_KG,COUNT(STOCKTRANSACTION.BASEPRIMARYQUANTITY) AS QTY_ROL  
-       FROM DB2ADMIN.STOCKTRANSACTION STOCKTRANSACTION LEFT OUTER JOIN
-DB2ADMIN.ITXVIEWLAPMASUKGREIGE ITXVIEWLAPMASUKGREIGE ON ITXVIEWLAPMASUKGREIGE.PROVISIONALCODE  = STOCKTRANSACTION.ORDERCODE
-AND ITXVIEWLAPMASUKGREIGE.ORDERLINE  = STOCKTRANSACTION.ORDERLINE
-AND ITXVIEWLAPMASUKGREIGE.PROVISIONALCOUNTERCODE  = STOCKTRANSACTION.ORDERCOUNTERCODE  
-AND ITXVIEWLAPMASUKGREIGE.ITEMTYPEAFICODE = STOCKTRANSACTION.ITEMTYPECODE 
-AND ITXVIEWLAPMASUKGREIGE.SUBCODE01= STOCKTRANSACTION.DECOSUBCODE01
-AND ITXVIEWLAPMASUKGREIGE.SUBCODE02= STOCKTRANSACTION.DECOSUBCODE02
-AND ITXVIEWLAPMASUKGREIGE.SUBCODE03= STOCKTRANSACTION.DECOSUBCODE03
-AND ITXVIEWLAPMASUKGREIGE.SUBCODE04= STOCKTRANSACTION.DECOSUBCODE04
-WHERE STOCKTRANSACTION.PROJECTCODE='" . trim($r['proj_awal']) . "' AND 
-CONCAT(TRIM(STOCKTRANSACTION.DECOSUBCODE02),CONCAT(TRIM(STOCKTRANSACTION.DECOSUBCODE03),CONCAT(' ',TRIM(STOCKTRANSACTION.DECOSUBCODE04))))='" . trim($r['no_item']) . "' and 
-STOCKTRANSACTION.LOGICALWAREHOUSECODE ='M021' 
-AND NOT ITXVIEWLAPMASUKGREIGE.ORDERLINE IS NULL
-GROUP BY 
-STOCKTRANSACTION.DECOSUBCODE02,STOCKTRANSACTION.DECOSUBCODE03,STOCKTRANSACTION.DECOSUBCODE04,STOCKTRANSACTION.LOGICALWAREHOUSECODE
-";
+              // End Penyebab Lemot
+
+              $sqlDB211 = "SELECT SUM(STOCKTRANSACTION.BASEPRIMARYQUANTITY) AS QTY_KG,COUNT(STOCKTRANSACTION.BASEPRIMARYQUANTITY) AS QTY_ROL  
+                                FROM DB2ADMIN.STOCKTRANSACTION STOCKTRANSACTION LEFT OUTER JOIN
+                                DB2ADMIN.ITXVIEWLAPMASUKGREIGE ITXVIEWLAPMASUKGREIGE ON ITXVIEWLAPMASUKGREIGE.PROVISIONALCODE  = STOCKTRANSACTION.ORDERCODE
+                                AND ITXVIEWLAPMASUKGREIGE.ORDERLINE  = STOCKTRANSACTION.ORDERLINE
+                                AND ITXVIEWLAPMASUKGREIGE.PROVISIONALCOUNTERCODE  = STOCKTRANSACTION.ORDERCOUNTERCODE  
+                                AND ITXVIEWLAPMASUKGREIGE.ITEMTYPEAFICODE = STOCKTRANSACTION.ITEMTYPECODE 
+                                AND ITXVIEWLAPMASUKGREIGE.SUBCODE01= STOCKTRANSACTION.DECOSUBCODE01
+                                AND ITXVIEWLAPMASUKGREIGE.SUBCODE02= STOCKTRANSACTION.DECOSUBCODE02
+                                AND ITXVIEWLAPMASUKGREIGE.SUBCODE03= STOCKTRANSACTION.DECOSUBCODE03
+                                AND ITXVIEWLAPMASUKGREIGE.SUBCODE04= STOCKTRANSACTION.DECOSUBCODE04
+                                WHERE STOCKTRANSACTION.PROJECTCODE='$r[proj_awal]' AND 
+                                CONCAT(TRIM(STOCKTRANSACTION.DECOSUBCODE02),CONCAT(TRIM(STOCKTRANSACTION.DECOSUBCODE03),CONCAT(' ',TRIM(STOCKTRANSACTION.DECOSUBCODE04))))='$r[no_item]' and 
+                                STOCKTRANSACTION.LOGICALWAREHOUSECODE ='M021' 
+                                AND NOT ITXVIEWLAPMASUKGREIGE.ORDERLINE IS NULL
+                                GROUP BY 
+                                STOCKTRANSACTION.DECOSUBCODE02,STOCKTRANSACTION.DECOSUBCODE03,STOCKTRANSACTION.DECOSUBCODE04,STOCKTRANSACTION.LOGICALWAREHOUSECODE
+                                ";
               $stmt11   = db2_exec($conn1, $sqlDB211, array('cursor' => DB2_SCROLLABLE));
               $rowdb211 = db2_fetch_assoc($stmt11);
 
               $sqlDB28 = " SELECT a.VALUEDECIMAL  FROM PRODUCT p 
 LEFT OUTER JOIN ADSTORAGE a  ON a.UNIQUEID = p.ABSUNIQUEID 
-WHERE CONCAT(TRIM(p.SUBCODE02),CONCAT(TRIM(p.SUBCODE03),CONCAT(' ',TRIM(p.SUBCODE04))))='" . $r['no_item'] . "' AND
+WHERE CONCAT(TRIM(p.SUBCODE02),CONCAT(TRIM(p.SUBCODE03),CONCAT(' ',TRIM(p.SUBCODE04))))='$r[no_item]' AND
 a.NAMENAME ='Width' AND
 p.ITEMTYPECODE ='KFF'  ";
               $stmt8   = db2_exec($conn1, $sqlDB28, array('cursor' => DB2_SCROLLABLE));
               $rowdb28 = db2_fetch_assoc($stmt8);
               $sqlDB29 = " SELECT a.VALUEDECIMAL  FROM PRODUCT p 
 LEFT OUTER JOIN ADSTORAGE a  ON a.UNIQUEID = p.ABSUNIQUEID 
-WHERE CONCAT(TRIM(p.SUBCODE02),CONCAT(TRIM(p.SUBCODE03),CONCAT(' ',TRIM(p.SUBCODE04))))='" . $r['no_item'] . "' AND
+WHERE CONCAT(TRIM(p.SUBCODE02),CONCAT(TRIM(p.SUBCODE03),CONCAT(' ',TRIM(p.SUBCODE04))))='$r[no_item]' AND
 a.NAMENAME ='GSM' AND
 p.ITEMTYPECODE ='KFF'  ";
               $stmt9   = db2_exec($conn1, $sqlDB29, array('cursor' => DB2_SCROLLABLE));

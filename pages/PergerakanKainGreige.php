@@ -1088,7 +1088,7 @@ $rowdb210 = db2_fetch_assoc($stmt10);
 															BALANCE
 													) y ON x.ITEMELEMENTCODE = y.ELEMENTSCODE
 												WHERE
-													x.CUTORGTRTRANSACTIONNUMBER = '" . $rowdb23[' TRANSACTIONNUMBER '] . "'
+													x.CUTORGTRTRANSACTIONNUMBER = '$rowdb23[TRANSACTIONNUMBER]'
 												";
 									$stmt4   = db2_exec($conn1, $sqlDB24, array('cursor' => DB2_SCROLLABLE));
 									$rowdb24 = db2_fetch_assoc($stmt4);
@@ -1116,7 +1116,7 @@ $rowdb210 = db2_fetch_assoc($stmt10);
 															BALANCE
 													) y ON x.ITEMELEMENTCODE = y.ELEMENTSCODE
 												WHERE
-													x.ITEMELEMENTCODE = '" . $rowdb23[' ITEMELEMENTCODE '] . "'
+													x.ITEMELEMENTCODE = '$rowdb23[ITEMELEMENTCODE]'
 													AND X.TEMPLATECODE = '342'
 												";
 									$stmt5   = db2_exec($conn1, $sqlDB25, array('cursor' => DB2_SCROLLABLE));

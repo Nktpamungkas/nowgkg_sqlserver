@@ -256,10 +256,6 @@ if ($_POST['cek'] == "Cek" or $_POST['cari'] == "Cari") {
                   die(print_r(sqlsrv_errors(), true)); // Menampilkan kesalahan jika query gagal
               }
 
-              echo "SELECT SN, status, KG, zone, lokasi, lokasi_asli, tgl_masuk, COUNT(SN) AS jmlscn
-                                          FROM dbnow_gkg.tbl_stokloss
-                                          $Where
-                                          GROUP BY SN, status, KG, zone, lokasi, lokasi_asli, tgl_masuk";
               $no = 1;
               $c = 0;
               while ($rowd1 = sqlsrv_fetch_array($sql1)) {

@@ -211,10 +211,10 @@
                 LEFT OUTER JOIN PRODUCTIONRESERVATION p2 ON p.CODE = p2.ORDERCODE
               WHERE
                 p.ITEMTYPEAFICODE = 'KGF'
-                AND p.SUBCODE01 = '".trim($rowdb21[' DECOSUBCODE01 '])."'
-                AND p.SUBCODE02 = '".trim($rowdb21[' DECOSUBCODE02 '])."'
-                AND p.SUBCODE03 = '".trim($rowdb21[' DECOSUBCODE03 '])."'
-                AND p.SUBCODE04 = '".trim($rowdb21[' DECOSUBCODE04 '])."'
+                AND p.SUBCODE01 = '".trim($rowdb21['DECOSUBCODE01'])."' 
+                AND p.SUBCODE02 = '".trim($rowdb21['DECOSUBCODE02'])."'
+                AND p.SUBCODE03 = '".trim($rowdb21['DECOSUBCODE03'])."'
+                AND p.SUBCODE04 = '".trim($rowdb21['DECOSUBCODE04'])."'
                 AND (
                   p.PROJECTCODE = '".trim($proj)."'
                   OR p.ORIGDLVSALORDLINESALORDERCODE = '".trim($proj)."')) 

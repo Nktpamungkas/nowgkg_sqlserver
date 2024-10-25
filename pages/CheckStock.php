@@ -1,5 +1,5 @@
 <?php
-include "./utils/helper.php";
+include "utils/helper.php";
 ?>
 <?php
 $Zone = isset($_POST['zone']) ? $_POST['zone'] : '';
@@ -247,15 +247,19 @@ if ($_POST['cek'] == "Cek" or $_POST['cari'] == "Cari") {
                 }
 
               // Menjalankan query
-              $sql1 = sqlsrv_query($con, "SELECT SN, KG, zone, lokasi, lokasi_asli, tgl_masuk, COUNT(SN) AS jmlscn
+              $sql1 = sqlsrv_query($con, "SELECT SN, status, KG, zone, lokasi, lokasi_asli, tgl_masuk, COUNT(SN) AS jmlscn
                                           FROM dbnow_gkg.tbl_stokloss
                                           $Where
-                                          GROUP BY SN, KG, zone, lokasi, lokasi_asli, tgl_masuk");
+                                          GROUP BY SN,status,KG, zone, lokasi, lokasi_asli, tgl_masuk");
 
               if ($sql1 === false) {
                   die(print_r(sqlsrv_errors(), true)); // Menampilkan kesalahan jika query gagal
               }
 
+              echo "SELECT SN, status, KG, zone, lokasi, lokasi_asli, tgl_masuk, COUNT(SN) AS jmlscn
+                                          FROM dbnow_gkg.tbl_stokloss
+                                          $Where
+                                          GROUP BY SN, status, KG, zone, lokasi, lokasi_asli, tgl_masuk";
               $no = 1;
               $c = 0;
               while ($rowd1 = sqlsrv_fetch_array($sql1)) {
@@ -284,12 +288,7 @@ if ($_POST['cek'] == "Cek" or $_POST['cari'] == "Cari") {
               <td style="text-align: center"><?php echo $rowd1['zone'] . "-" . $rowd1['lokasi']; ?></td>
               <td style="text-align: center"><?php echo $rowd1['lokasi_asli']; ?></td>
               <td style="text-align: center"><?php echo cek($tglmsk); ?></td>
-              <td style="text-align: center"><small
-                  class='badge <?php if ($rowd1['status'] == "tidak ok") {
-                    echo "badge-warning";
-                  } ?>'><i
-                    class='fas fa-exclamation-triangle text-default blink_me'></i> <?php echo $rowd1['status']; ?></small>
-                <?php echo $ketSN . ", " . $ketSCN; ?> </td>
+              <td style="text-align: center"><small class='badge <?php if($rowd1['status']=="tidak ok"){ echo"badge-warning";}?>' ><i class='fas fa-exclamation-triangle text-default blink_me'></i> <?php echo $rowd1['status']; ?></small> <?php echo $ketSN.", ".$ketSCN; ?> </td>
             </tr>
             <?php
 

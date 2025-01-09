@@ -23,13 +23,13 @@ $tanggalAkhir = isset($_POST['tanggal_akhir']) ? $_POST['tanggal_akhir'] : '';
             <div class="form-group row">
                 <label for="tanggal_awal" class="col-md-1">Tanggal Awal</label>
                 <div class="col-md-2">
-                    <input name="tanggal_awal" value="<?php echo $TanggalAwal; ?>" type="date" class="form-control form-control-sm" id="tanggal_awal" autocomplete="off">
+                    <input name="tanggal_awal" value="<?php echo $tanggalAwal; ?>" type="date" class="form-control form-control-sm" id="tanggal_awal" autocomplete="off">
                 </div>
             </div>
             <div class="form-group row">
                 <label for="tanggal_akhir" class="col-md-1">Tanggal Akhir</label>
                 <div class="col-md-2">
-                    <input name="tanggal_akhir" value="<?php echo $TanggalAwal; ?>" type="date" class="form-control form-control-sm" id="tanggal_akhir" autocomplete="off">
+                    <input name="tanggal_akhir" value="<?php echo $tanggalAkhir; ?>" type="date" class="form-control form-control-sm" id="tanggal_akhir" autocomplete="off">
                 </div>
             </div>
             <button class="btn btn-info" type="submit" id="cari-data">Cari Data</button>

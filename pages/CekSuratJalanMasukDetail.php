@@ -12,15 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="container-fluid">
   <form role="form" method="post" enctype="multipart/form-data" name="form1">
     <div class="card card-info">
-      <!-- <div class="card-header">
-        <h3 class="card-title">Detail Data Greige Masuk Dari KNT - <?php $NoBon . '-' . $NoLine?></h3>
-      </div> -->
       <div class="card-header d-flex justify-content-between align-items-center">
-            <form action="CekSuratJalanMasuk" method="POST" class="d-inline">
-                <input type="hidden" name="tanggal_awal" value="<?php echo $tanggalAwal; ?>">
-                <input type="hidden" name="tanggal_akhir" value="<?php echo $tanggalAkhir; ?>">
-                <button type="submit" class="btn btn-secondary btn-sm">Back</button>
-            </form>
           <h3 class="card-title">Detail Data Greige Masuk Dari KNT ( <?php echo $NoBon . '-' . $NoLine; ?> )</h3>
           <input name="nobon" value="<?php echo $NoBon; ?>" type="hidden" class="form-control form-control-sm" id="" autocomplete="off" required>
           <input name="lineno" value="<?php echo $NoLine; ?>" type="hidden" class="form-control form-control-sm" id="" autocomplete="off" required>

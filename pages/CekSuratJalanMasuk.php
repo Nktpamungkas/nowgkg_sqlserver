@@ -39,7 +39,7 @@ $tanggalAkhir = isset($_POST['tanggal_akhir']) ? $_POST['tanggal_akhir'] : '';
 
     <div class="card card-warning">
       <div class="card-header">
-        <h3 class="card-title">Detail Data Surat Jalan Masuk Dari KNT</h3>
+        <h3 class="card-title">Summary Data Surat Jalan Masuk Dari KNT</h3>
       </div>
       <!-- /.card-header -->
       <div class="card-body">
@@ -149,6 +149,7 @@ while ($rowdb21 = db2_fetch_assoc($stmt1)) {
     $NoLine = $rowdb21['ORDERLINE'];
 
     $itemElementCodes = [];
+    $jumlahTglBeda = 0;
 
     $sqlDetail = " SELECT
       STOCKTRANSACTION.ORDERCODE,
@@ -195,7 +196,27 @@ while ($rowdb21 = db2_fetch_assoc($stmt1)) {
     if ($stmtDetail) {
         while ($row = db2_fetch_assoc($stmtDetail)) {
             $itemElementCodes[] = $row['ITEMELEMENTCODE'];
+            $tanggalKNT = $row['TRANSACTIONDATE'];
+
+            $sqlCekCount = "SELECT STOCKTRANSACTION.TRANSACTIONDATE,STOCKTRANSACTION.LOGICALWAREHOUSECODE,
+            STOCKTRANSACTION.ITEMELEMENTCODE,STOCKTRANSACTION.BASESECONDARYQUANTITY,
+            STOCKTRANSACTION.BASEPRIMARYQUANTITY,STOCKTRANSACTION.WHSLOCATIONWAREHOUSEZONECODE,
+            STOCKTRANSACTION.WAREHOUSELOCATIONCODE,STOCKTRANSACTION.LOTCODE
+            FROM DB2ADMIN.STOCKTRANSACTION STOCKTRANSACTION
+            WHERE STOCKTRANSACTION.LOGICALWAREHOUSECODE='M021' AND STOCKTRANSACTION.TOKENCODE ='RECEIPT' AND
+            STOCKTRANSACTION.TEMPLATECODE ='204' AND
+            STOCKTRANSACTION.ITEMELEMENTCODE='$row[ITEMELEMENTCODE]'";
+
+            $stmtCekCount = db2_exec($conn1, $sqlCekCount, array('cursor' => DB2_SCROLLABLE));
+            $dataCekCount = db2_fetch_assoc($stmtCekCount);
+
+            $tanggalGKG = $dataCekCount['TRANSACTIONDATE'];
+
+            if ($tanggalKNT != $tanggalGKG) {
+                $jumlahTglBeda++;
+            }
         }
+
         $itemElementCodesList = "'" . implode("','", $itemElementCodes) . "'";
     }
 
@@ -238,6 +259,7 @@ while ($rowdb21 = db2_fetch_assoc($stmt1)) {
     $rD2 = db2_fetch_assoc($stmt4);
 
     $stts = "";
+    $statusTanggal = "";
 
     if ($rowdb21['QTY_KG'] == $rD['BASEPRIMARYQUANTITY']) {
         $stts = "<small class='badge badge-success'> OK</small>";
@@ -248,11 +270,26 @@ while ($rowdb21 = db2_fetch_assoc($stmt1)) {
     } else if ($rowdb21['QTY_KG'] > 0 and $rD['BASEPRIMARYQUANTITY'] > 0 and $rD1['BASEPRIMARYQUANTITYUNIT'] == "0") {
         $stts = "<small class='badge badge-info'><i class='far fa-clock blink_me'></i> Sudah Pakai</small>";
     }
+
+    if ($jumlahTglBeda > 0) {
+        $statusTanggal = "<small class='badge badge-danger'><i class='far fa-clock blink_me'></i>Tanggal Beda</small>";
+    }
+
+    // Set session variables
+    $_SESSION['nobon'] = $NoBon;
+    $_SESSION['lineno'] = $NoLine;
+    $_SESSION['tanggal_awal'] = $tanggalAwal;
+    $_SESSION['tanggal_akhir'] = $tanggalAkhir;
+
     ?>
               <tr>
                 <td style="text-align: center"><?php echo $no; ?></td>
                 <td style="text-align: center"><?php echo $rowdb21['TRANSACTIONDATE']; ?></td>
-                <td style="text-align: center"><?php echo $bon; ?></td>
+                <td style="text-align: center">
+                    <a href="javascript:void(0);" class="btn btn-link" onclick="openInNewTab('<?php echo $NoBon; ?>', '<?php echo $NoLine; ?>', '<?php echo $tanggalAwal; ?>', '<?php echo $tanggalAkhir; ?>')">
+                        <?php echo $bon; ?>
+                    </a>
+                </td>
                 <td style="text-align: center"><?php echo $rowdb21['PROJECTCODE']; ?></td>
                 <td style="text-align: left"><?php echo $rowdb21['SUMMARIZEDDESCRIPTION']; ?></td>
                 <td style="text-align: center"><?php echo trim($rowdb21['DECOSUBCODE02']) . trim($rowdb21['DECOSUBCODE03']) . " " . $rowdb21['DECOSUBCODE04']; ?></td>
@@ -260,11 +297,14 @@ while ($rowdb21 = db2_fetch_assoc($stmt1)) {
                 <td style="text-align: right"><?php echo number_format(round($rowdb21['QTY_KG'], 2), 2); ?></td>
                 <td style="text-align: right"><?php echo number_format(round($rD2['BASEPRIMARYQUANTITYUNIT'], 2), 2); ?></td>
                 <td style="text-align: right"><?php echo number_format(round($rD['BASEPRIMARYQUANTITY'], 2), 2); ?></td>
-                <td><?php echo $rD['TRANSACTIONDATE']; ?></td>
+                <td>
+  <?php
+echo $rD['TRANSACTIONDATE'];
+    ?>
+                </td>
                 <td style="text-align: right"><?php echo number_format(round($rD1['BASEPRIMARYQUANTITYUNIT'], 2), 2); ?></td>
-                <td><?php echo $stts; ?></td>
+                <td><?php echo $stts . '<br>' . nl2br($statusTanggal); ?></td>
               </tr>
-
             <?php
 $no++;
 
@@ -313,7 +353,57 @@ $no++;
 <!-- AdminLTE App -->
 <script src="dist/js/adminlte.min.js"></script>
 
+<script>
+    function openInNewTab(NoBon, NoLine, tanggalAwal, tanggalAkhir) {
+        // Buat form dinamis
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'CekSuratJalanMasukDetail'; // Ubah ke halaman tujuan Anda
+        form.target = '_blank'; // Form dikirim ke tab baru
 
+        // Buat input untuk setiap parameter yang ingin dikirim
+        var input1 = document.createElement('input');
+        input1.type = 'hidden';
+        input1.name = 'NoBon';
+        input1.value = NoBon;
+
+        var input2 = document.createElement('input');
+        input2.type = 'hidden';
+        input2.name = 'NoLine';
+        input2.value = NoLine;
+
+        var input3 = document.createElement('input');
+        input3.type = 'hidden';
+        input3.name = 'tanggalAwal';
+        input3.value = tanggalAwal;
+
+        var input4 = document.createElement('input');
+        input4.type = 'hidden';
+        input4.name = 'tanggalAkhir';
+        input4.value = tanggalAkhir;
+
+        // Menambahkan input ke dalam form
+        form.appendChild(input1);
+        form.appendChild(input2);
+        form.appendChild(input3);
+        form.appendChild(input4);
+
+        // Tambahkan form ke body dan submit
+        document.body.appendChild(form);
+        form.submit();
+    }
+</script>
+
+<script>
+    function saveSessionAndOpenTab(NoBon, NoLine, tanggalAwal, tanggalAkhir) {
+        sessionStorage.setItem('NoBon', NoBon);
+        sessionStorage.setItem('NoLine', NoLine);
+        sessionStorage.setItem('tanggalAwal', tanggalAwal);
+        sessionStorage.setItem('tanggalAkhir', tanggalAkhir);
+
+        window.open('CekSuratJalanMasukDetail', '_blank');
+    }
+</script>
 <script>
     document.getElementById("cari-data").addEventListener("click", function(event) {
         const tanggalAwal = document.getElementById("tanggal_awal").value;

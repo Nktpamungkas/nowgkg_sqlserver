@@ -43,6 +43,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <link rel="stylesheet" href="plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
   <!-- Toastr -->
   <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
+  <!-- ChartJS -->
+	<script src="plugins/chart.js/Chart.min.js"></script>	
+	<script src="plugins/chart.js/chart371.js"></script>	
+	<script src="plugins/chart.js/chartjs-plugin-datalabels.js"></script>  	
   <!-- Theme style -->
   <?php if ($page == "stdlodingdye") {?>
   <!-- X Editable -->
@@ -93,6 +97,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			  <li><a href="DetailBagikain" class="dropdown-item">Detail BagiKain</a></li>
 			  <li><a href="StdLodingDYE" class="dropdown-item">Standard Loading Mesin Dyeing</a></li>
 			  <li><a href="ChangeLocation" class="dropdown-item">Change Location</a></li>
+        <li><a href="StockMatiKainGKG" class="dropdown-item">Kain Greige (Stock Mati)</a></li>
 			</ul>
           </li>
 		  <li class="nav-item dropdown">
@@ -235,7 +240,7 @@ if (file_exists($files)) {
 <?php if ($page == "stdlodingdye") {?>
 <!-- xeditablejs -->
 <script src="plugins/x-editable/dist/bootstrap4-editable/js/bootstrap-editable.min.js"></script>
-<?php }?>
+<?php }?>	
 <!-- AdminLTE App -->
 <script src="dist/js/adminlte.min.js"></script>
 

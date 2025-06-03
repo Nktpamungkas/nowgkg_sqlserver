@@ -42,15 +42,14 @@ $Awal  = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
     <div class="card card-pink">
       <div class="card-header">
         <h3 class="card-title">Stock</h3>
+        <a href="pages/cetak/download_stock_kain_mati.php?tanggal1=<?php echo $Awal; ?>" class="btn bg-blue float-right" target="_blank">Cetak Excel</a>
       </div>
       <!-- /.card-header -->
       <div class="card-body table-responsive">
          <!-- Tombol Excel Export -->
          <div class="col-md-4 mb-6 d-flex align-items-end">
             <div align="right">
-                <a href="pages/cetak/download_stock_kain_mati.php?tanggal1=<?php echo isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : date('YYYY-mm-dd'); ?>"
-                  class="btn btn-primary">
-                <i class="fa fa-file-excel"></i> Export Excel
+                 
               </a>
             </div>
           </div>

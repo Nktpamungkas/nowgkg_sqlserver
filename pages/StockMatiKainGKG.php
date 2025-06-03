@@ -29,13 +29,13 @@ $Awal  = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
                   <i class="far fa-calendar-alt"></i>
                 </span>
               </div>
-              <input name="tgl_awal" value="<?php echo $Awal; ?>" type="text" class="form-control form-control-sm" id="" autocomplete="off" required>
+              <input name="tgl_awal" value="<?php echo isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : date('YYYY-mm-dd'); ?>" type="text" class="form-control form-control-sm" id="" autocomplete="off" required>
             </div>
           </div>
         </div>
         <button class="btn btn-info" type="submit">Cari Data</button>
       </div>
-      <!-- /.card-body -->
+      <!-- /.card-body -->     
     </div>
   </form>
   <?php if ($Awal != "") { ?>
@@ -45,6 +45,15 @@ $Awal  = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
       </div>
       <!-- /.card-header -->
       <div class="card-body table-responsive">
+         <!-- Tombol Excel Export -->
+         <div class="col-md-4 mb-6 d-flex align-items-end">
+            <div align="right">
+                <a href="pages/cetak/download_stock_kain_mati.php?tanggal1=<?php echo isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : date('YYYY-mm-dd'); ?>"
+                  class="btn btn-primary">
+                <i class="fa fa-file-excel"></i> Export Excel
+              </a>
+            </div>
+          </div>
         <table id="example6" width="100%" class="table table-sm table-bordered table-hover tree" style="font-size:13px;">
           <thead>
             <tr>

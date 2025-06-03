@@ -17,12 +17,30 @@ include"../../koneksi.php";
 //$tgl=date("Y-m-d");
 ?>
 
-           <div align="center"> <h1>LAPORAN HARIAN PEMBAGIAN KAIN GREIGE</h1></div>
+           <!-- <div align="center"> <h1>LAPORAN HARIAN PEMBAGIAN KAIN GREIGE</h1></div>
           <div align="Right"> NO. FORM:<br />
           NO. REVISI:<br />
           TGL Terbit:<br />
           HALAMAN:
-          </div>
+          </div> -->
+
+<div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+	<!-- Logo -->
+	<div style="margin-right: 20px;">
+		<!-- <img src="images/logo.png" alt="Logo" style="height: 80px;"> -->
+	</div>
+
+  <!-- Judul -->
+  	<div style="text-align: center;">
+      <h1 style="margin: 0;">LAPORAN HARIAN PEMBAGIAN KAIN GREIGE</h1>
+      <h3 style="margin: 5px 0 0 0;">
+          NO. FORM : FW - 19 - GKG - 03/05<br />
+          HALAMAN :
+      </h3>
+      <!-- <p>NO. REVISI:<br/>TGL Terbit:</p> -->
+	</div>
+</div>
+
 <div align="LEFT">TGL : <?php echo date($_GET['awal']); ?></div>
 <table width="125%" border="1" align="Center">
   <tr align="center">
@@ -37,6 +55,7 @@ include"../../koneksi.php";
     <td rowspan="2" >Quantity (KG)</td>
     <td rowspan="2" >Warna</td>
     <td rowspan="2" >No Card (Prod. Order)</td>
+    <td rowspan="2" >Lot KK</td>
     <td rowspan="2" >No. Lot (Prod. Demand)</td>
     <td rowspan="2" >Knitt</td>
     <td rowspan="2" >Demand Knitt (LOT Balance)</td>
@@ -65,54 +84,49 @@ include"../../koneksi.php";
 	STOCKTRANSACTION.LOTCODE,
 	STOCKTRANSACTION.CREATIONUSER,
 	prj.PROJECTCODE AS PROJAWAL,
+	prj1.PROJECTCODE AS PROJAWAL1,
 	COUNT(STOCKTRANSACTION.BASEPRIMARYQUANTITY) AS QTY_DUS,
 	SUM(STOCKTRANSACTION.BASEPRIMARYQUANTITY) AS QTY_KG,
-	ITXVIEWKNTORDER.ORIGDLVSALORDLINESALORDERCODE,
-	ITXVIEWKNTORDER.PROJECTCODE,
-	ITXVIEWKNTORDER.PRODUCTIONDEMANDCODE,
-	ITXVIEWKNTORDER.LEGALNAME1,  
+	ITXVIEWHEADERKNTORDER.ORIGDLVSALORDLINESALORDERCODE,
+	ITXVIEWHEADERKNTORDER.PROJECTCODE,
+	ITXVIEWHEADERKNTORDER.PRODUCTIONDEMANDCODE,
+	ITXVIEWHEADERKNTORDER.LEGALNAME1,  
 	FULLITEMKEYDECODER.SUMMARIZEDDESCRIPTION
 	FROM DB2ADMIN.STOCKTRANSACTION STOCKTRANSACTION
 	LEFT OUTER JOIN
 	(SELECT 
-	ITXVIEWKNTORDER.PRODUCTIONORDERCODE,
-	LISTAGG(DISTINCT TRIM(ITXVIEWKNTORDER.ORIGDLVSALORDLINESALORDERCODE),', ') AS ORIGDLVSALORDLINESALORDERCODE,
-	LISTAGG(DISTINCT  TRIM(ITXVIEWKNTORDER.PRODUCTIONDEMANDCODE),', ') AS PRODUCTIONDEMANDCODE,
-	LISTAGG(DISTINCT TRIM(ITXVIEWKNTORDER.PROJECTCODE),', ') AS PROJECTCODE,
-	ITXVIEWKNTORDER.INITIALSCHEDULEDACTUALDATE,	
-	ITXVIEWKNTORDER.LEGALNAME1 FROM 
-DB2ADMIN.ITXVIEWKNTORDER
-GROUP BY ITXVIEWKNTORDER.PRODUCTIONORDERCODE,
-ITXVIEWKNTORDER.LEGALNAME1,
-ITXVIEWKNTORDER.INITIALSCHEDULEDACTUALDATE) ITXVIEWKNTORDER
-	 ON ITXVIEWKNTORDER.PRODUCTIONORDERCODE =STOCKTRANSACTION.ORDERCODE 
+	ITXVIEWHEADERKNTORDER.PRODUCTIONORDERCODE,
+	LISTAGG(DISTINCT TRIM(ITXVIEWHEADERKNTORDER.ORIGDLVSALORDLINESALORDERCODE),', ') AS ORIGDLVSALORDLINESALORDERCODE,
+	LISTAGG(DISTINCT  TRIM(ITXVIEWHEADERKNTORDER.PRODUCTIONDEMANDCODE),', ') AS PRODUCTIONDEMANDCODE,
+	LISTAGG(DISTINCT TRIM(ITXVIEWHEADERKNTORDER.PROJECTCODE),', ') AS PROJECTCODE,
+	LISTAGG(DISTINCT TRIM(ITXVIEWHEADERKNTORDER.LEGALNAME1),', ') AS LEGALNAME1 FROM 
+DB2ADMIN.ITXVIEWHEADERKNTORDER
+GROUP BY ITXVIEWHEADERKNTORDER.PRODUCTIONORDERCODE) ITXVIEWHEADERKNTORDER
+	 ON ITXVIEWHEADERKNTORDER.PRODUCTIONORDERCODE =STOCKTRANSACTION.ORDERCODE 
 	LEFT OUTER JOIN DB2ADMIN.FULLITEMKEYDECODER FULLITEMKEYDECODER ON
     STOCKTRANSACTION.FULLITEMIDENTIFIER = FULLITEMKEYDECODER.IDENTIFIER
 LEFT OUTER JOIN (
 SELECT
-    STOCKTRANSACTION.ORDERCODE,
-    STOCKTRANSACTION.ORDERLINE,
-    STOCKTRANSACTION.ITEMELEMENTCODE,
-    ITXVIEWBUKMUTGKGKNT.PROJECTCODE
+    INTERNALDOCUMENTLINE.PROJECTCODE,
+    STOCKTRANSACTION.ITEMELEMENTCODE
+FROM
+    INTERNALDOCUMENTLINE INTERNALDOCUMENTLINE
+LEFT JOIN STOCKTRANSACTION STOCKTRANSACTION ON
+    INTERNALDOCUMENTLINE.INTDOCPROVISIONALCOUNTERCODE = STOCKTRANSACTION.ORDERCOUNTERCODE
+    AND INTERNALDOCUMENTLINE.INTDOCUMENTPROVISIONALCODE = STOCKTRANSACTION.ORDERCODE
+    AND INTERNALDOCUMENTLINE.WAREHOUSECODE = STOCKTRANSACTION.LOGICALWAREHOUSECODE
+    AND INTERNALDOCUMENTLINE.ORDERLINE = STOCKTRANSACTION.ORDERLINE
+WHERE
+    STOCKTRANSACTION.ORDERCOUNTERCODE = 'I02M50' ) prj ON prj.ITEMELEMENTCODE = STOCKTRANSACTION.ITEMELEMENTCODE
+LEFT OUTER JOIN (
+SELECT
+    STOCKTRANSACTION.PROJECTCODE ,
+    STOCKTRANSACTION.ITEMELEMENTCODE
 FROM
     STOCKTRANSACTION STOCKTRANSACTION
-LEFT JOIN INTERNALDOCUMENTLINE INTERNALDOCUMENTLINE 
-ON
-    STOCKTRANSACTION.ORDERCODE = INTERNALDOCUMENTLINE.INTDOCUMENTPROVISIONALCODE
-    AND 
-STOCKTRANSACTION.ORDERLINE = INTERNALDOCUMENTLINE.ORDERLINE
-LEFT JOIN ITXVIEWBUKMUTGKGKNT ITXVIEWBUKMUTGKGKNT 
-ON
-    INTERNALDOCUMENTLINE.INTDOCUMENTPROVISIONALCODE = ITXVIEWBUKMUTGKGKNT.INTDOCUMENTPROVISIONALCODE
-    AND 
-INTERNALDOCUMENTLINE.ORDERLINE = ITXVIEWBUKMUTGKGKNT.ORDERLINE
-WHERE
-    STOCKTRANSACTION.ORDERCOUNTERCODE = 'I02M50' 
+WHERE STOCKTRANSACTION.TEMPLATECODE ='OPN'  
 GROUP BY
-    STOCKTRANSACTION.ORDERCODE,
-    STOCKTRANSACTION.ORDERLINE,
-    STOCKTRANSACTION.ITEMELEMENTCODE,
-    ITXVIEWBUKMUTGKGKNT.PROJECTCODE) prj ON prj.ITEMELEMENTCODE = STOCKTRANSACTION.ITEMELEMENTCODE	
+    STOCKTRANSACTION.PROJECTCODE,STOCKTRANSACTION.ITEMELEMENTCODE) prj1 ON prj1.ITEMELEMENTCODE = STOCKTRANSACTION.ITEMELEMENTCODE    
 WHERE (STOCKTRANSACTION.ITEMTYPECODE ='KGF' OR STOCKTRANSACTION.ITEMTYPECODE ='FKG') and STOCKTRANSACTION.LOGICALWAREHOUSECODE ='M021' AND
 STOCKTRANSACTION.ONHANDUPDATE > 1 AND TRANSACTIONDATE BETWEEN '$Awal' AND '$Akhir' AND NOT STOCKTRANSACTION.ORDERCODE IS NULL 
 GROUP BY
@@ -130,10 +144,11 @@ GROUP BY
 	STOCKTRANSACTION.LOTCODE,
 	STOCKTRANSACTION.CREATIONUSER,
 	prj.PROJECTCODE,
-	ITXVIEWKNTORDER.ORIGDLVSALORDLINESALORDERCODE,
-	ITXVIEWKNTORDER.PROJECTCODE,
-	ITXVIEWKNTORDER.PRODUCTIONDEMANDCODE,
-	ITXVIEWKNTORDER.LEGALNAME1,
+	prj1.PROJECTCODE,
+	ITXVIEWHEADERKNTORDER.ORIGDLVSALORDLINESALORDERCODE,
+	ITXVIEWHEADERKNTORDER.PROJECTCODE,
+	ITXVIEWHEADERKNTORDER.PRODUCTIONDEMANDCODE,
+	ITXVIEWHEADERKNTORDER.LEGALNAME1,
 	FULLITEMKEYDECODER.SUMMARIZEDDESCRIPTION
 ";
 	$stmt1   = db2_exec($conn1,$sqlDB21, array('cursor'=>DB2_SCROLLABLE));
@@ -180,7 +195,7 @@ while($rowdb23 = db2_fetch_assoc($stmt3)){
 }
 $sqlDB24 = " SELECT ugp.LONGDESCRIPTION AS WARNA,pr.LONGDESCRIPTION,p.PRODUCTIONORDERCODE,pd.SUBCODE01,pd.SUBCODE02,pd.SUBCODE03,
 	pd.SUBCODE04,pd.SUBCODE05,pd.SUBCODE06,pd.SUBCODE07,pd.SUBCODE08,pd.INTERNALREFERENCE,
-	LISTAGG(DISTINCT  TRIM(pd.CODE),', ') AS PRODUCTIONDEMANDCODE
+	LISTAGG(DISTINCT  TRIM(pd.CODE),', ') AS PRODUCTIONDEMANDCODE,pd.DESCRIPTION
 	FROM PRODUCTIONDEMANDSTEP p
 	LEFT OUTER JOIN PRODUCTIONDEMAND pd ON pd.CODE =p.PRODUCTIONDEMANDCODE
 	LEFT JOIN PRODUCT pr ON
@@ -199,7 +214,7 @@ $sqlDB24 = " SELECT ugp.LONGDESCRIPTION AS WARNA,pr.LONGDESCRIPTION,p.PRODUCTION
     pd.SUBCODE05 = ugp.CODE
 WHERE (pd.PROJECTCODE ='$project' OR pd.ORIGDLVSALORDLINESALORDERCODE ='$project') AND p.PRODUCTIONORDERCODE='$rowdb21[ORDERCODE]'	
 	GROUP BY pr.LONGDESCRIPTION,p.PRODUCTIONORDERCODE,pd.SUBCODE01,pd.SUBCODE02,pd.SUBCODE03,
-	pd.SUBCODE04,pd.SUBCODE05,pd.SUBCODE06,pd.SUBCODE07,pd.SUBCODE08,pd.INTERNALREFERENCE,ugp.LONGDESCRIPTION ";
+	pd.SUBCODE04,pd.SUBCODE05,pd.SUBCODE06,pd.SUBCODE07,pd.SUBCODE08,pd.INTERNALREFERENCE,ugp.LONGDESCRIPTION,pd.DESCRIPTION ";
 $stmt4   = db2_exec($conn1,$sqlDB24, array('cursor'=>DB2_SCROLLABLE));
 $rowdb24 = db2_fetch_assoc($stmt4);
 		
@@ -231,6 +246,7 @@ if($rowdb24['PRODUCTIONDEMANDCODE']!=""){$dmndno=$rowdb24['PRODUCTIONDEMANDCODE'
 	 <td align=right>".number_format($rowdb21['QTY_KG'],'2','.',',')."</td>	
 	 <td >".$rowdb24['WARNA']."</td>
 	 <td >'".$rowdb21['ORDERCODE']."</td> 
+	 <td >'".$rowdb24['DESCRIPTION']."</td>
 	 <td >'".$dmndno."</td> 
 	 <td >$knitt1</td>
 	 <td >'".$rowdb21['LOTCODE']."</td>
@@ -244,14 +260,51 @@ if($rowdb24['PRODUCTIONDEMANDCODE']!=""){$dmndno=$rowdb24['PRODUCTIONDEMANDCODE'
 	 }
   ?>
   <tr align="right">
-  	<td colspan="10"  ><b>Total</b></td>
-  	<td > <b><?php echo number_format($totr,'2','.',','); ?></b></td>
-    <td > <b><?php echo number_format($totqt,'2','.',','); ?></b></td>
-	<td colspan="6" >&nbsp;</td>
+  	<td colspan="9"  ><b>Total</b></td>
+  	<td ><b><?php echo number_format($totr,'2','.',','); ?></b></td>
+  	<td ><b><?php echo number_format($totqt,'2','.',','); ?></b></td>
+  	<td >&nbsp;</td>
+	<td colspan="7" >&nbsp;</td>
 	</tr>
+
+	<tr>
+        <td colspan="17" style="border: none;">&nbsp;</td>
+        </tr>
+        <tr>
+        <td colspan="17" style="border: none;">&nbsp;</td>
+        </tr>
+        <tr>
+        <td colspan="17" style="border: none;">&nbsp;</td>
+    </tr>
+
+     <tr>
+  <td colspan="4"></td>
+  <td colspan="3" style="text-align: center; vertical-align: middle;">Dibuat Oleh :</td>
+  <td colspan="5" style="text-align: center; vertical-align: middle;">Diperiksa Oleh :</td>
+  <td colspan="7" style="text-align: center; vertical-align: middle;">Mengertahui :</td>
+</tr>
+<tr>
+  <td colspan="4" style="text-align: center; vertical-align: middle;">Nama</td>
+  <td colspan="3" style="text-align: center; vertical-align: middle;"></td>
+  <td colspan="5" style="text-align: center; vertical-align: middle;"></td>
+  <td colspan="7" style="text-align: center; vertical-align: middle;"></td>
+</tr>
+<tr>
+  <td colspan="4" style="text-align: center; vertical-align: middle;">Jabatan</td>
+  <td colspan="3" style="text-align: center; vertical-align: middle;"></td>
+  <td colspan="5" style="text-align: center; vertical-align: middle;"></td>
+  <td colspan="7" style="text-align: center; vertical-align: middle;"></td>
+</tr>
+<tr>
+  <td colspan="4" style="text-align: center; vertical-align: middle;">Tanggal</td>
+  <td colspan="3" style="text-align: center; vertical-align: middle;"></td>
+  <td colspan="5" style="text-align: center; vertical-align: middle;"></td>
+  <td colspan="7" style="text-align: center; vertical-align: middle;"></td>
+</tr>
+<tr>
+  <td colspan="4" style="text-align: center; vertical-align: middle;">Tanda Tangan</td>
+  <td colspan="3" style="text-align: center; vertical-align: middle;"><br><br><br><br></td>
+  <td colspan="5" style="text-align: center; vertical-align: middle;"></td>
+  <td colspan="7" style="text-align: center; vertical-align: middle;"></td>
+</tr>
 </table>
-
-
-        
-
-

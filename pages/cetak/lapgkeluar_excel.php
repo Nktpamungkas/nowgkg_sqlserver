@@ -266,17 +266,12 @@ if($rowdb24['PRODUCTIONDEMANDCODE']!=""){$dmndno=$rowdb24['PRODUCTIONDEMANDCODE'
   	<td >&nbsp;</td>
 	<td colspan="7" >&nbsp;</td>
 	</tr>
+</table>
 
-	<tr>
-        <td colspan="17" style="border: none;">&nbsp;</td>
-        </tr>
-        <tr>
-        <td colspan="17" style="border: none;">&nbsp;</td>
-        </tr>
-        <tr>
-        <td colspan="17" style="border: none;">&nbsp;</td>
-    </tr>
+<table></table>
+<table></table>
 
+<table style="width: auto;" border="1">
      <tr>
   <td colspan="4"></td>
   <td colspan="3" style="text-align: center; vertical-align: middle;">Dibuat Oleh :</td>

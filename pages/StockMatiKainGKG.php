@@ -7,7 +7,7 @@ $Awal  = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
   <form role="form" method="post" enctype="multipart/form-data" name="form1">
     <div class="card card-success">
       <div class="card-header">
-        <h3 class="card-title">Filter Data Stock Kain Greige</h3>
+        <h3 class="card-title">Filter Data Stock Mati Kain Greige</h3>
 
         <div class="card-tools">
           <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -174,6 +174,13 @@ $Awal  = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
               // $stmt11   = db2_exec($conn1, $sqlDB211, array('cursor' => DB2_SCROLLABLE));
               // $rowdb211 = db2_fetch_assoc($stmt11);
 
+              //query jenis benang yang di gunakan
+              $sqlbenang = sqlsrv_query($con,"SELECT *  
+              FROM dbnow_gkg.tbl_knitting_order where ko_no ='$r[proj_awal]' 
+              ");		  
+              $r2 = sqlsrv_fetch_array($sqlbenang);
+
+
               $sqlDB28 = " SELECT a.VALUEDECIMAL  FROM PRODUCT p 
 LEFT OUTER JOIN ADSTORAGE a  ON a.UNIQUEID = p.ABSUNIQUEID 
 WHERE CONCAT(TRIM(p.SUBCODE02),CONCAT(TRIM(p.SUBCODE03),CONCAT(' ',TRIM(p.SUBCODE04))))='$r[no_item]' AND
@@ -190,15 +197,15 @@ p.ITEMTYPECODE ='KFF'  ";
               $rowdb29 = db2_fetch_assoc($stmt9);
             ?>
               <tr>                
-                <td style="text-align: left"><?php echo $r['langganan']; ?></td>
-                <td style="text-align: left"><?php echo $r['benang_1']; ?></td>
-                <td style="text-align: left"><?php echo $r['benang_2']; ?></td>
-                <td style="text-align: left"><?php echo $r['benang_3']; ?></td>
-                <td style="text-align: left"><?php echo $r['benang_4']; ?></td>
+                <td style="text-align: left"><?php echo $r2['buyer']; ?></td>
+                <td style="text-align: left"><?php echo $r2['benang_1']; ?></td>
+                <td style="text-align: left"><?php echo $r2['benang_2']; ?></td>
+                <td style="text-align: left"><?php echo $r2['benang_3']; ?></td>
+                <td style="text-align: left"><?php echo $r2['benang_4']; ?></td>
                 <td style="text-align: center"><?php echo $r['no_item']; ?></td>
                 <td style="text-align: center"><?php echo round($rowdb28['VALUEDECIMAL']); ?></td>
                 <td style="text-align: center"><?php echo round($rowdb29['VALUEDECIMAL']); ?></td>  
-                <td style="text-align: center"></td>
+                <td style="text-align: center">INDOTAICHEN</td>
                 <td style="text-align: center"><?php echo $r['proj_awal']; ?></td>
                 <td style="text-align: center"><?php echo $r['roll']; ?></td>
                 <td style="text-align: right"><?php echo $r['kgs']; ?></td>

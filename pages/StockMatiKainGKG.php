@@ -84,48 +84,27 @@ $Awal  = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
             
             // Ini query utama, udah disesuain supaya sama, tapi coba cek lagi 
             $sql = sqlsrv_query($con, "WITH RankedData AS (
-                                                                      SELECT
-                                                                        id,
-                                                                        TRIM(proj_awal) AS proj_awal,
-                                                                        TRIM(no_item) AS no_item,
-                                                                        langganan,
-                                                                        buyer,
+                                                                      SELECT DISTINCT 
+                                                                        proj_awal,
+                                                                        no_item,
                                                                         lot,
                                                                         tipe,
-                                                                        benang_1,
-                                                                        benang_2,
-                                                                        benang_3,
-                                                                        benang_4,
-                                                                        weight AS kgs,
-                                                                        rol AS roll,
+                                                                        kgs,
+                                                                        roll,
                                                                         tgl_tutup,
-                                                                        CASE 
-                                                                            WHEN CHARINDEX('/', REVERSE(TRIM(proj_awal))) > 0 
-                                                                            THEN '20' + LEFT(
-                                                                                REVERSE(
-                                                                                    LEFT(
-                                                                                        REVERSE(TRIM(proj_awal)),
-                                                                                        CHARINDEX('/', REVERSE(TRIM(proj_awal))) - 1
-                                                                                    )
-                                                                                ),
-                                                                                2
-                                                                            )
-                                                                            ELSE NULL
-                                                                        END AS tahun_mati,
+                                                                        tahun_mati,
                                                                         ROW_NUMBER() OVER (
-                                                                          PARTITION BY TRIM(proj_awal), TRIM(no_item)
-                                                                          ORDER BY tgl_tutup DESC
-                                                                        ) AS rn
-                                                                      FROM dbnow_gkg.tblopname
-                                                                      WHERE 
-                                                                        proj_awal LIKE '%/%'
+                                                                                      PARTITION BY TRIM(proj_awal), TRIM(no_item)
+                                                                                      ORDER BY tgl_tutup DESC
+                                                                                    ) AS rn
+                                                                        FROM Stock_mati_gkg
+                                                                                  WHERE 
+                                                                                    proj_awal LIKE '%/%'
                                                                         and  tgl_tutup = '$Awal'
-                                                                    --    AND proj_awal = '2023562/XII/21'
-                                                                    )
+                                                                        )
                                                                     SELECT *
                                                                     FROM RankedData
                                                                     WHERE rn = 1
-                                                                    and tahun_mati IN ('2019', '2020', '2021')
                                                                     ORDER BY tahun_mati ASC");
             // End Query utama
 
@@ -183,14 +162,14 @@ $Awal  = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
 
               $sqlDB28 = " SELECT a.VALUEDECIMAL  FROM PRODUCT p 
 LEFT OUTER JOIN ADSTORAGE a  ON a.UNIQUEID = p.ABSUNIQUEID 
-WHERE CONCAT(TRIM(p.SUBCODE02),CONCAT(TRIM(p.SUBCODE03),CONCAT(' ',TRIM(p.SUBCODE04))))='$r[no_item]' AND
+WHERE CONCAT(TRIM(p.SUBCODE02), TRIM(p.SUBCODE03)) ='$r[no_item]' AND
 a.NAMENAME ='Width' AND
 p.ITEMTYPECODE ='KFF'  ";
               $stmt8   = db2_exec($conn1, $sqlDB28, array('cursor' => DB2_SCROLLABLE));
               $rowdb28 = db2_fetch_assoc($stmt8);
               $sqlDB29 = " SELECT a.VALUEDECIMAL  FROM PRODUCT p 
 LEFT OUTER JOIN ADSTORAGE a  ON a.UNIQUEID = p.ABSUNIQUEID 
-WHERE CONCAT(TRIM(p.SUBCODE02),CONCAT(TRIM(p.SUBCODE03),CONCAT(' ',TRIM(p.SUBCODE04))))='$r[no_item]' AND
+WHERE CONCAT(TRIM(p.SUBCODE02), TRIM(p.SUBCODE03))='$r[no_item]' AND
 a.NAMENAME ='GSM' AND
 p.ITEMTYPECODE ='KFF'  ";
               $stmt9   = db2_exec($conn1, $sqlDB29, array('cursor' => DB2_SCROLLABLE));

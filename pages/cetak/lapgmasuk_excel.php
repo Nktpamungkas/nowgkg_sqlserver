@@ -221,39 +221,39 @@ if($rowdb26['VALUEDECIMAL']!=""){$gsm11=round($rowdb26['VALUEDECIMAL']);}
 if($rowdb21['SCHEDULEDRESOURCECODE']!=""){$noMC=$rowdb21['SCHEDULEDRESOURCECODE'];}else{$noMC=$rowdb27['NO_MESIN'];}		
 $knitt1="ITTI";		
   echo"<tr>
-  	<td >$no</td>
-	<td >".$rowdb21['TRANSACTIONDATE']."</td>
-    <td >$langganan</td>
-    <td >$bon</td>
-    <td >".$a[0]."</td>
-    <td >".$a[1]."</td>
-    <td >".$a[2]."</td>
-	<td >".$a[3]."</td>
-	<td >".$itemc."</td>
-	<td >".trim($rowdb21['SUBCODE04'])."</td>
-	<td  align=right>".$lbr1."</td>
-	<td  align=right>".$gsm11."</td>
-	<td  align=right>".$rowdb21['QTY_ROL']."</td>
-	<td  align=right>".number_format($rowdb21['QTY_KG'],'2','.',',')."</td>
-	<td >$knitt1</td>
-	<td >".$rowdb21['PROJECTCODE']."</td>
-	<td >".$noMC."</td>
+  	<td>$no</td>
+	<td>".$rowdb21['TRANSACTIONDATE']."</td>
+    <td>$langganan</td>
+    <td>$bon</td>
+    <td>".$a[0]."</td>
+    <td>".$a[1]."</td>
+    <td>".$a[2]."</td>
+	<td>".$a[3]."</td>
+	<td>".$itemc."</td>
+	<td>".trim($rowdb21['SUBCODE04'])."</td>
+	<td align=right>".$lbr1."</td>
+	<td align=right>".$gsm11."</td>
+	<td align=right>".$rowdb21['QTY_ROL']."</td>
+	<td align=right>".number_format($rowdb21['QTY_KG'],'2','.',',')."</td>
+	<td>$knitt1</td>
+	<td>".$rowdb21['PROJECTCODE']."</td>
+	<td>".$noMC."</td>
 	   </tr>";
 	$totqt=$totqt+$rowdb21['QTY_KG'];
 	$totr=$totr+$rowdb21['QTY_ROL'];	
   	$no++;}
   ?>
   <tr align="right">
-  	<td colspan="8"  ><b>Total</b></td>
-    <td ></td>
-    <td ></td>
-	<td ></td>
-	<td ></td>
-	<td > <b><?php echo $totr; ?></b></td>
-	<td > <b><?php echo number_format($totqt,'2','.',','); ?></b></td>
-	<td ></td>
-	<td ></td>
-    <td ></td>
+  	<td><b>Total</b></td>
+    <td></td>
+    <td></td>
+	<td></td>
+	<td></td>
+	<td><b><?php echo $totr; ?></b></td>
+	<td><b><?php echo number_format($totqt,'2','.',','); ?></b></td>
+	<td></td>
+	<td></td>
+    <td></td>
 	  </tr>
 </table>
 
@@ -265,7 +265,7 @@ $knitt1="ITTI";
         <td colspan="4"></td>
         <td colspan="3" style="text-align: center; vertical-align: middle;">Dibuat Oleh :</td>
         <td colspan="4" style="text-align: center; vertical-align: middle;">Diperiksa Oleh :</td>
-        <td colspan="6" style="text-align: center; vertical-align: middle;">Mengertahui :</td>
+        <td colspan="6" style="text-align: center; vertical-align: middle;">Mengetahui :</td>
     </tr>
     <tr>
         <td colspan="4" style="text-align: center; vertical-align: middle;">Nama</td>

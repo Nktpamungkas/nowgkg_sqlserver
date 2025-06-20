@@ -33,7 +33,42 @@ $Awal  = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
             </div>
           </div>
         </div>
-        <button class="btn btn-info" type="submit">Cari Data</button>
+        <!-- <button class="btn btn-info" type="submit">Cari Data</button> -->
+
+        <!-- <button class="btn btn-info" type="submit">Cari Data</button> -->
+      <form method="POST">
+        <button type="submit" name="submit" class="btn btn-success">
+          <i class="icofont icofont-search-alt-1"></i> Cari data
+        </button>
+      </form>
+
+      <?php
+      include 'koneksi.php'; // koneksi ke SQL Server
+
+      $ipaddress = $_SERVER['REMOTE_ADDR'];
+
+      if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
+          if (filter_var($ipaddress, FILTER_VALIDATE_IP)) {
+
+              // Siapkan parameter
+              $params = array($ipaddress);
+
+              // Hapus dari tabel pertama
+              $sql1 = "DELETE FROM dbnow_gkg.tbl_stock_excel WHERE ip_address = ?";
+              $stmt1 = sqlsrv_query($con, $sql1, $params);
+
+              if ($stmt1 === false) {
+                  echo "<div class='alert alert-danger'>Gagal menghapus dari tbl_stock_excel:</div>";
+                  echo "<pre>"; print_r(sqlsrv_errors()); echo "</pre>";
+              } else {
+                  sqlsrv_free_stmt($stmt1);
+              }
+
+          } else {
+              echo "<div class='alert alert-warning'>IP address tidak valid.</div>";
+          }
+      }
+      ?>
       </div>
       <!-- /.card-body -->
     </div>
@@ -42,6 +77,8 @@ $Awal  = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
     <div class="card card-pink">
       <div class="card-header">
         <h3 class="card-title">Stock</h3>
+            <!-- <a href="pages/cetak/stock_pdf.php?awal=<?php echo $Awal; ?>" class="btn bg-green float-right me-2" target="_blank">Print</a> -->
+            <a href="pages/cetak/stock_excel.php?awal=<?php echo $Awal; ?>" class="btn bg-blue float-right" style="margin-right: 10px;" target="_blank">Print</a>
       </div>
       <!-- /.card-header -->
       <div class="card-body">
@@ -78,31 +115,33 @@ $Awal  = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
             $no = 1;
             $c = 0;
             $QTPR = 0;
-            
-            // Ini query utama, udah disesuain supaya sama, tapi coba cek lagi 
-            $sql = sqlsrv_query($con, "SELECT
-                                                      MIN(id) as id,
-                                                      trim(proj_awal)as proj_awal ,
-                                                      TRIM(no_item)as no_item,
-                                                      MAX(langganan) AS langganan,
-                                                      MAX(buyer) AS buyer,
-                                                      MAX(lot) AS lot,
-                                                      MAX(tipe) AS tipe,
-                                                      MAX(benang_1) AS benang_1,
-                                                      MAX(benang_2) AS benang_2,
-                                                      MAX(benang_3) AS benang_3,
-                                                      MAX(benang_4) AS benang_4,
-                                                      SUM(weight) AS kgs,
-                                                      SUM(rol) AS roll
-                                                  FROM
-                                                      dbnow_gkg.dbnow_gkg.tblopname
-                                                  WHERE
-                                                      tgl_tutup = '$Awal'
-                                                  GROUP BY
-                                                      proj_awal,
-                                                      no_item
-                                                  Order by id asc");
-            // End Query utama
+             
+                $sql = sqlsrv_query($con, "SELECT
+                      MIN(id) as id,
+                      TRIM(proj_awal) as proj_awal,
+                      TRIM(no_item) as no_item,
+                      MAX(langganan) AS langganan,
+                      MAX(buyer) AS buyer,
+                      MAX(lot) AS lot,
+                      MAX(tipe) AS tipe,
+                      MAX(benang_1) AS benang_1,
+                      MAX(benang_2) AS benang_2,
+                      MAX(benang_3) AS benang_3,
+                      MAX(benang_4) AS benang_4,
+                      SUM(weight) AS kgs,
+                      SUM(rol) AS roll,  
+                      tgl_tutup
+                  FROM
+                      dbnow_gkg.tblopname
+                  WHERE
+                      tgl_tutup = ?
+                  GROUP BY
+                      proj_awal, no_item, tgl_tutup
+                  ORDER BY id ASC", [$Awal]);
+
+                  // if ($sql === false) {
+                  //     die(print_r(sqlsrv_errors(), true));
+                  // }
 
             while ($r = sqlsrv_fetch_array($sql)) {
               $sql1 = mysqli_query($con1,"SELECT sum(berat) as KGs, group_concat(no_bon,':',berat,' ') as no_bon  
@@ -200,6 +239,55 @@ p.ITEMTYPECODE ='KFF'  ";
               $totpr = $totpr + $QTPR;
               $totsr = $totsr + $rowdb211['QTY_KG'];
               $totlk = $totlk + $r1['KGs'];
+
+              $ipaddress = $_SERVER['REMOTE_ADDR'];
+              include_once("koneksi.php");
+
+              $sql2 = "INSERT INTO dbnow_gkg.tbl_stock_excel (
+                tgl_tutup,
+                langganan,
+                buyer,
+                proj_akhir,
+                proj_awal,
+                lot,
+                tipe,
+                no_item,
+                lebar,
+                gramasi,
+                benang_1,
+                benang_2,
+                benang_3,
+                benang_4,
+                qty_kg,
+                qty_roll,
+                ip_address
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+              $params = [
+                $r['tgl_tutup'],
+                $r['langganan'],
+                $r['buyer'],
+                $r['proj_akhir'],
+                $r['proj_awal'],
+                $r['lot'],
+                $r['tipe'],
+                $r['no_item'],
+                $rowdb28['VALUEDECIMAL'],
+                $rowdb29['VALUEDECIMAL'],
+                $r['benang_1'],
+                $r['benang_2'],
+                $r['benang_3'],
+                $r['benang_4'],
+                $r['kgs'],
+                $r['roll'],
+                $ipaddress
+              ];
+
+              $result = sqlsrv_query($con, $sql2, $params);
+
+              if (!$result) {
+                  die(print_r(sqlsrv_errors(), true));
+              }
             }
             ?>
           </tbody>

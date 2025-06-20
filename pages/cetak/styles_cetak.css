@@ -1,0 +1,196 @@
+body,td,th {
+  /*font-family: Courier New, Courier, monospace; */
+	font-family:sans-serif, Roman, serif;
+}
+body{
+	margin:0px auto 0px;
+	padding:3px;
+	font-size:5px;
+	color:#333;
+	width:98%;
+	background-position:top;
+	background-color:#fff;
+}
+.table-list {
+	clear: both;
+	text-align: left;
+	border-collapse: collapse;
+	margin: 0px 0px 10px 0px;
+	background:#fff;	
+}
+.table-list td {
+	color: #333;
+	font-size:12px;
+	border-color: #fff;
+	border-collapse: collapse;
+	vertical-align: center;
+	padding: 3px 5px;
+	border-bottom:1px #CCCCCC solid;
+	border-left:1px #CCCCCC solid;
+	border-right:1px #CCCCCC solid;
+}
+.table-list1 {
+	clear: both;
+	text-align: left;
+	border-collapse: collapse;
+	margin: 0px 0px 2px 0px;
+	background:#fff;
+}
+.table-list1 td {
+	color: #333;
+	font-size:5px;
+	border-color: #fff;
+	border-collapse: collapse;
+	vertical-align: center;
+	padding: 1px 2px;
+	border-bottom:1px #000 solid;
+	border-top:1px #000 solid;
+	border-left:1px #000 solid;
+	border-right:1px #000 solid;
+	
+	
+}
+.table-list2 {
+	clear: both;
+	text-align: left;
+	border-collapse: collapse;
+	margin: 0px 0px 2px 0px;
+	background:#fff;
+}
+
+.table-list2 td {
+	color: #333;
+	font-size:5px;
+	border-color: #fff;
+	border-collapse: collapse;
+	vertical-align: center;
+	padding: 1px 2px;
+	border-bottom:1px #000 solid;
+	border-top:1px #000 solid;
+	border-left:1px #000 solid;
+	border-right:1px #000 solid;
+	
+	
+}
+#nocetak {
+	display:none;
+	}
+
+	.pagebreak {
+    page-break-before: always;
+}
+@media print {
+    * {
+        font-family: Arial, sans-serif;
+        box-sizing: border-box;
+    }
+
+    .header,
+    .table-list1,
+    .footer {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        table-layout: fixed !important;
+    }
+
+    .table-list1 th,
+    .table-list1 td,
+    .footer td {
+        font-size: 7px !important;
+        padding: 4px !important;
+        border: 1px solid #000 !important;
+        text-align: center;
+        word-wrap: break-word;
+        vertical-align: middle;
+    }
+
+    input {
+        width: 95% !important;
+        font-size: 5px !important;
+        padding: 2px !important;
+        border: none !important;
+        background: none !important;
+        text-align: center;
+    }
+
+    ::-webkit-input-placeholder, :-moz-placeholder, ::-moz-placeholder, :-ms-input-placeholder {
+        color: transparent !important;
+    }
+
+    .tombol {
+        font-size: 5px !important;
+        border: 1px solid #000 !important;
+    }
+
+    .footer td[height="60"] {
+        height: 80px !important;
+        vertical-align: top !important;
+    }
+
+    .pagebreak {
+        page-break-before: always;
+    }
+}
+
+@media print {
+    .table-list1 th,
+    .table-list1 td {
+        font-size: 4px !important;
+        padding: 0px !important;
+    }
+
+	.table-list2 th,
+    .table-list2 td {
+        font-size: 4px !important;
+        padding: 0px !important;
+    }
+
+    /* Kolom kecil: No, Buyer, Lot, Tipe, Lebar, Gramasi, Roll, Stock GKG */
+    .table-list1 th:nth-child(1),
+    .table-list1 td:nth-child(1),  /* No */
+    .table-list1 th:nth-child(3),
+    .table-list1 td:nth-child(3),  /* Buyer */
+    .table-list1 th:nth-child(6),
+    .table-list1 td:nth-child(6),  /* Lot */
+    .table-list1 th:nth-child(7),
+    .table-list1 td:nth-child(7),  /* Tipe */
+    .table-list1 th:nth-child(9),
+    .table-list1 td:nth-child(9),  /* Lebar */
+    .table-list1 th:nth-child(10),
+    .table-list1 td:nth-child(10), /* Gramasi */
+    .table-list1 th:nth-child(15),
+    .table-list1 td:nth-child(15), /* Roll */
+    .table-list1 th:nth-child(16),
+    .table-list1 td:nth-child(16)  /* Stock GKG */ {
+        width: 0.5% !important;
+    }
+
+    /* Kolom Lebar Khusus: Langganan dan Benang 1–4 */
+    .table-list1 th:nth-child(2),
+    .table-list1 td:nth-child(2),  /* Langganan */
+	.table-list1 th:nth-child(8),
+    .table-list1 td:nth-child(8),
+    .table-list1 th:nth-child(11),
+    .table-list1 td:nth-child(11), /* Benang 1 */
+    .table-list1 th:nth-child(12),
+    .table-list1 td:nth-child(12), /* Benang 2 */
+    .table-list1 th:nth-child(13),
+    .table-list1 td:nth-child(13), /* Benang 3 */
+    .table-list1 th:nth-child(14),
+    .table-list1 td:nth-child(14)  /* Benang 4 */ {
+        width: 10% !important;
+    }
+}
+
+
+.footer td[height="60"] {
+    height: 80px !important;
+    vertical-align: top !important;
+}
+
+.footer .ttd-label {
+    height: 80px !important;
+    vertical-align: top !important;
+}
+
+-->

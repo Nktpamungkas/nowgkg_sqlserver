@@ -19,7 +19,8 @@ $sqlDB2 = " SELECT
 	PRODUCTIONDEMAND.SUBCODE06,
 	PRODUCTIONDEMAND.SUBCODE07,
 	PRODUCTIONDEMAND.SUBCODE08,
-	STOCKTRANSACTION.ITEMELEMENTCODE
+	STOCKTRANSACTION.ITEMELEMENTCODE,
+  a.VALUESTRING AS PANJANG_BENANG
 FROM
 	PRODUCTIONDEMAND PRODUCTIONDEMAND
 LEFT OUTER JOIN (
@@ -54,6 +55,8 @@ PRODUCTIONDEMAND.SUBCODE06 = pr.SUBCODE06
 PRODUCTIONDEMAND.SUBCODE07 = pr.SUBCODE07
 	AND
 PRODUCTIONDEMAND.SUBCODE08 = pr.SUBCODE08
+  LEFT JOIN PRODUCTIONDEMAND p ON p.CODE = SUBSTR(STOCKTRANSACTION.ITEMELEMENTCODE, 1, 8)
+  LEFT JOIN ADSTORAGE a ON a.UNIQUEID = p.ABSUNIQUEID AND a.FIELDNAME = 'FALoopLenght'
 WHERE
 	PRODUCTIONDEMAND.CODE = '$demand'
 GROUP BY
@@ -71,7 +74,8 @@ GROUP BY
 	PRODUCTIONDEMAND.SUBCODE06,
 	PRODUCTIONDEMAND.SUBCODE07,
 	PRODUCTIONDEMAND.SUBCODE08,
-	STOCKTRANSACTION.ITEMELEMENTCODE
+	STOCKTRANSACTION.ITEMELEMENTCODE,
+  a.VALUESTRING
 LIMIT 1 ";
 $stmt   = db2_exec($conn1,$sqlDB2, array('cursor'=>DB2_SCROLLABLE));
 $rowdb2 = db2_fetch_assoc($stmt);
@@ -482,9 +486,9 @@ $rowdb27 = db2_fetch_assoc($stmt7);
           <td width="14%" align="right" valign="top">Mesin KNT</td>
           <td width="1%" align="left" valign="top">:</td>
           <td width="16%" align="left" valign="top"><?php echo $rowLG['MESIN1'];//echo $rowdb25['NO_MESIN']; ?></td>
-          <td width="11%" align="right" valign="top">&nbsp;</td>
-          <td width="1%" align="left" valign="top">&nbsp;</td>
-          <td width="20%" align="left" valign="top">&nbsp;</td>
+          <td width="11%" align="right" valign="top">Panjang Benang</td>
+          <td width="1%" align="left" valign="top">:</td>
+          <td width="20%" align="left" valign="top"><?= $rowdb2['PANJANG_BENANG']; ?></td>
       </tr> 
       <tr>
           <td width="14%" align="left" valign="top">Jenis Kain</td>

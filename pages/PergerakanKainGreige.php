@@ -1288,6 +1288,11 @@ $rowdb210 = db2_fetch_assoc($stmt10);
 									$grouped[$order]['QTY_KG']  += (float) $row['QTY_KG'];
 								}
 
+								foreach ($grouped as &$g) {
+									$g['QTY_KG'] = number_format($g['QTY_KG'], 5, '.', ''); // 5 digit desimal, pakai titik
+								}
+								unset($g);
+
 								// convert ke array indexed biasa
 								$grouped = array_values($grouped);
 

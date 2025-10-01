@@ -1264,7 +1264,34 @@ $rowdb210 = db2_fetch_assoc($stmt10);
 													STOCKOUT.CREATIONUSER,
 													STOCKOUT.PROVISIONALCODE";
 								$stmt3   = db2_exec($conn1, $sqlDB23, array('cursor' => DB2_SCROLLABLE));
-								while ($rowdb23 = db2_fetch_assoc($stmt3)) {
+
+								$grouped = [];
+
+								while ($row = db2_fetch_assoc($stmt3)) {
+									$order = trim($row['ORDERCODE']); // pastikan buang spasi
+
+									if (!isset($grouped[$order])) {
+										// kalau ordercode belum ada, buat entry awal
+										$grouped[$order] = [
+											'TRANSACTIONDATE' => $row['TRANSACTIONDATE'],
+											'PROJECTCODE'     => $row['PROJECTCODE'],
+											'CREATIONUSER'    => $row['CREATIONUSER'],
+											'ORDERCODE'       => $order,
+											'PROVISIONALCODE' => $row['PROVISIONALCODE'],
+											'QTY_ROL'         => 0,
+											'QTY_KG'          => 0,
+										];
+									}
+
+									// tambahkan qty nya
+									$grouped[$order]['QTY_ROL'] += (int) $row['QTY_ROL'];
+									$grouped[$order]['QTY_KG']  += (float) $row['QTY_KG'];
+								}
+
+								// convert ke array indexed biasa
+								$grouped = array_values($grouped);
+
+								foreach ($grouped as $rowdb23) {
 									$sqlDB2PRJ = " SELECT
 														LISTAGG (DISTINCT TRIM(PROJECTCODE), ', ') AS PROJECTCODE,
 														LISTAGG (
@@ -1346,9 +1373,9 @@ $rowdb210 = db2_fetch_assoc($stmt10);
 									$stmtWRN   = db2_exec($conn1, $sqlDB2WRN, array('cursor' => DB2_SCROLLABLE));
 									//$rowdbWRN = db2_fetch_assoc($stmtWRN);	
 									/*$sqlDB2BRTO = " SELECT SUM(x.USERPRIMARYQUANTITY) AS QTYBRUTO  FROM DB2ADMIN.ITXVIEW_KGBRUTO x
-WHERE (PROJECTCODE ='$rowdb23[PROJECTCODE]' OR PROJECTCODE ='$prjct') AND ORIGDLVSALORDERLINEORDERLINE ='$rowdbWRN[ORIGDLVSALORDERLINEORDERLINE]'";		
-$stmtBRTO   = db2_exec($conn1,$sqlDB2BRTO, array('cursor'=>DB2_SCROLLABLE));
-$rowdbBRTO = db2_fetch_assoc($stmtBRTO);*/
+													WHERE (PROJECTCODE ='$rowdb23[PROJECTCODE]' OR PROJECTCODE ='$prjct') AND ORIGDLVSALORDERLINEORDERLINE ='$rowdbWRN[ORIGDLVSALORDERLINEORDERLINE]'";		
+													$stmtBRTO   = db2_exec($conn1,$sqlDB2BRTO, array('cursor'=>DB2_SCROLLABLE));
+													$rowdbBRTO = db2_fetch_assoc($stmtBRTO);*/
 									if ($rowdb23['PROJECTCODE'] != "") {
 										$prj = $rowdb23['PROJECTCODE'];
 									} else if ($rowdb23['ORIGDLVSALORDLINESALORDERCODE'] != "") {
@@ -1394,7 +1421,6 @@ $rowdbBRTO = db2_fetch_assoc($stmtBRTO);*/
 													";
 									$stmtBRTO   = db2_exec($conn1, $sqlDB2BRTO, array('cursor' => DB2_SCROLLABLE));
 									$rowdbBRTO = db2_fetch_assoc($stmtBRTO);
-
 								?>
 									<tr>
 										<td style="text-align: center"><?php echo $rowdb23['TRANSACTIONDATE']; ?></td>

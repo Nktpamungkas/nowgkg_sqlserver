@@ -206,17 +206,22 @@ $knitt1="ITTI";
 	<td ></td>
     <td ></td>
 	  </tr>
-</table>
 
-<table></table>
-<table></table>
+    <tr>
+        <td colspan="17" style="border: none;">&nbsp;</td>
+        </tr>
+        <tr>
+        <td colspan="17" style="border: none;">&nbsp;</td>
+        </tr>
+        <tr>
+        <td colspan="17" style="border: none;">&nbsp;</td>
+    </tr>
 
-<table style="width: auto;" border="1">
      <tr>
   <td colspan="4"></td>
   <td colspan="3" style="text-align: center; vertical-align: middle;">Dibuat Oleh :</td>
   <td colspan="4" style="text-align: center; vertical-align: middle;">Diperiksa Oleh :</td>
-  <td colspan="6" style="text-align: center; vertical-align: middle;">Mengetahui :</td>
+  <td colspan="6" style="text-align: center; vertical-align: middle;">Mengertahui :</td>
 </tr>
 <tr>
   <td colspan="4" style="text-align: center; vertical-align: middle;">Nama</td>

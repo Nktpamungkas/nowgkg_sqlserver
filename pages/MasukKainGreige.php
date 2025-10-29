@@ -56,7 +56,6 @@ $Akhir	= isset($_POST['tgl_akhir']) ? $_POST['tgl_akhir'] : '';
               <div class="card-header">
                 <h3 class="card-title">Detail Laporan Harian Masuk Kain Greige</h3>
 				<a href="pages/cetak/lapgmasuk_excel.php?awal=<?php echo $Awal;?>&akhir=<?php echo $Akhir;?>" class="btn bg-blue float-right" target="_blank">Cetak Excel</a>  
-                  <a href="pages/cetak/lapgmasuk_qty.php?awal=<?php echo $Awal;?>&akhir=<?php echo $Akhir;?>" class="btn bg-red float-right" style="margin-right: 10px; target="_blank">Greige Qty</a>  
           </div>
               <!-- /.card-header -->
               <div class="card-body">				  
@@ -381,9 +380,9 @@ if($rowdb21['QTY_KG']>0){$qtyB=$rowdb21['QTY_KG'];}else{$qtyB=$rowdb21['QTY1_KG'
             </div> 
 		<div class="card card-primary">
               <div class="card-header">
-                <h3 class="card-title">Detail Laporan Retur Produksi</h3>				
-                  <a href="pages/cetak/lapReturUlang_excel.php?awal=<?php echo $Awal;?>&akhir=<?php echo $Akhir;?>" class="btn bg-red float-right" target="_blank">Cetak Excel</a>  	 
-          </div>
+                <h3 class="card-title">Detail Laporan Retur Produksi</h3>
+                    <a href="pages/cetak/lapReturUlang_excel.php?awal=<?php echo $Awal;?>&akhir=<?php echo $Akhir;?>" class="btn bg-red float-right" target="_blank">Cetak Excel</a>  	 
+              </div>
               <!-- /.card-header -->
               <div class="card-body">
                 <table id="example17" width="100%" class="table table-sm table-bordered table-striped" style="font-size: 11px; text-align: center;">
@@ -604,7 +603,7 @@ if($rowdb22R1['ORDERPARTNERBRANDCODE']==""){$buyer="";}else{$buyer=$rowdb22R1['O
               <div class="card-header">
                 <h3 class="card-title">Detail Laporan Retur Untuk Bagi Ulang</h3>				 
                 <a href="pages/cetak/lapBagiUlang_excel.php?awal=<?php echo $Awal;?>&akhir=<?php echo $Akhir;?>" class="btn bg-red float-right" target="_blank">Cetak Excel</a>  
-          </div>
+              </div>
               <!-- /.card-header -->
               <div class="card-body">
                 <table id="example18" width="100%" class="table table-sm table-bordered table-striped" style="font-size: 11px; text-align: center;">
@@ -1300,3 +1299,102 @@ function checkAll(form1){
     }
 }
 </script>
+<?php 
+if($_POST['mutasikain']=="MutasiKain"){
+	
+function mutasiurut(){
+include "koneksi.php";		
+$format = "20".date("ymd");
+$sql=mysqli_query($con,"SELECT no_mutasi FROM tbl_mutasi_kain WHERE substr(no_mutasi,1,8) like '%".$format."%' ORDER BY no_mutasi DESC LIMIT 1 ") or die (mysql_error());
+$d=mysqli_num_rows($sql);
+if($d>0){
+$r=mysqli_fetch_array($sql);
+$d=$r['no_mutasi'];
+$str=substr($d,8,2);
+$Urut = (int)$str;
+}else{
+$Urut = 0;
+}
+$Urut = $Urut + 1;
+$Nol="";
+$nilai=2-strlen($Urut);
+for ($i=1;$i<=$nilai;$i++){
+$Nol= $Nol."0";
+}
+$tidbr =$format.$Nol.$Urut;
+return $tidbr;
+}
+$nomid=mutasiurut();	
+
+$sql1=mysqli_query($con,"SELECT *,count(b.transid) as jmlrol,a.transid as kdtrans FROM tbl_mutasi_kain a 
+LEFT JOIN tbl_prodemand b ON a.transid=b.transid 
+WHERE isnull(a.no_mutasi) AND date_format(a.tgl_buat ,'%Y-%m-%d')='$Awal' AND a.gshift='$Gshift' 
+GROUP BY a.transid");
+$n1=1;
+$noceklist1=1;	
+while($r1=mysqli_fetch_array($sql1)){	
+	if($_POST['cek'][$n1]!='') 
+		{
+		$transid1 = $_POST['cek'][$n1];
+		mysqli_query($con,"UPDATE tbl_mutasi_kain SET
+		no_mutasi='$nomid',
+		tgl_mutasi=now()
+		WHERE transid='$transid1'
+		");
+		}else{
+			$noceklist1++;
+	}
+	$n1++;
+	}
+if($noceklist1==$n1){
+	echo "<script>
+  	$(function() {
+    const Toast = Swal.mixin({
+      toast: false,
+      position: 'middle',
+      showConfirmButton: false,
+      timer: 2000
+    });
+	Toast.fire({
+        icon: 'info',
+        title: 'Data tidak ada yang di Ceklist',
+		
+      })
+  });
+  
+</script>";	
+}else{	
+echo "<script>
+	$(function() {
+    const Toast = Swal.mixin({
+      toast: false,
+      position: 'middle',
+      showConfirmButton: true,
+      timer: 6000
+    });
+	Toast.fire({
+  title: 'Data telah di Mutasi',
+  text: 'klik OK untuk Cetak Bukti Mutasi',
+  icon: 'success',  
+}).then((result) => {
+  if (result.isConfirmed) {
+    	window.open('pages/cetak/cetak_mutasi_ulang.php?mutasi=$nomid', '_blank');
+  }
+})
+  });
+	</script>";
+	
+/*echo "<script>
+	Swal.fire({
+  title: 'Data telah di Mutasi',
+  text: 'klik OK untuk Cetak Bukti Mutasi',
+  icon: 'success',  
+}).then((result) => {
+  if (result.isConfirmed) {
+    	window.location='Mutasi';
+  }
+});
+	</script>";	*/
+}
+}
+?>

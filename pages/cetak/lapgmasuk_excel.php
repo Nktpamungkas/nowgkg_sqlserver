@@ -17,9 +17,9 @@ include"../../koneksi.php"
 
 <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
     <!-- Logo -->
-    <!-- <div style="margin-right: 20px;">
-        <img src="dist/img/indo.png" alt="Logo" style="height: 80px;">
-    </div> -->
+    <div style="margin-right: 20px;">
+        <!-- <img src="images/logo.png" alt="Logo" style="height: 80px;"> -->
+    </div>
 
     <!-- Judul -->
     <div style="text-align: center;">
@@ -221,76 +221,82 @@ if($rowdb26['VALUEDECIMAL']!=""){$gsm11=round($rowdb26['VALUEDECIMAL']);}
 if($rowdb21['SCHEDULEDRESOURCECODE']!=""){$noMC=$rowdb21['SCHEDULEDRESOURCECODE'];}else{$noMC=$rowdb27['NO_MESIN'];}		
 $knitt1="ITTI";		
   echo"<tr>
-  	<td>$no</td>
-	<td>".$rowdb21['TRANSACTIONDATE']."</td>
-    <td>$langganan</td>
-    <td>$bon</td>
-    <td>".$a[0]."</td>
-    <td>".$a[1]."</td>
-    <td>".$a[2]."</td>
-	<td>".$a[3]."</td>
-	<td>".$itemc."</td>
-	<td>".trim($rowdb21['SUBCODE04'])."</td>
-	<td align=right>".$lbr1."</td>
-	<td align=right>".$gsm11."</td>
-	<td align=right>".$rowdb21['QTY_ROL']."</td>
-	<td align=right>".number_format($rowdb21['QTY_KG'],'2','.',',')."</td>
-	<td>$knitt1</td>
-	<td>".$rowdb21['PROJECTCODE']."</td>
-	<td>".$noMC."</td>
+  	<td >$no</td>
+	<td >".$rowdb21['TRANSACTIONDATE']."</td>
+    <td >$langganan</td>
+    <td >$bon</td>
+    <td >".$a[0]."</td>
+    <td >".$a[1]."</td>
+    <td >".$a[2]."</td>
+	<td >".$a[3]."</td>
+	<td >".$itemc."</td>
+	<td >".trim($rowdb21['SUBCODE04'])."</td>
+	<td  align=right>".$lbr1."</td>
+	<td  align=right>".$gsm11."</td>
+	<td  align=right>".$rowdb21['QTY_ROL']."</td>
+	<td  align=right>".number_format($rowdb21['QTY_KG'],'2','.',',')."</td>
+	<td >$knitt1</td>
+	<td >".$rowdb21['PROJECTCODE']."</td>
+	<td >".$noMC."</td>
 	   </tr>";
 	$totqt=$totqt+$rowdb21['QTY_KG'];
 	$totr=$totr+$rowdb21['QTY_ROL'];	
   	$no++;}
   ?>
   <tr align="right">
-  	<td><b>Total</b></td>
-    <td></td>
-    <td></td>
-	<td></td>
-	<td></td>
-	<td><b><?php echo $totr; ?></b></td>
-	<td><b><?php echo number_format($totqt,'2','.',','); ?></b></td>
-	<td></td>
-	<td></td>
-    <td></td>
+  	<td colspan="8"  ><b>Total</b></td>
+    <td ></td>
+    <td ></td>
+	<td ></td>
+	<td ></td>
+	<td > <b><?php echo $totr; ?></b></td>
+	<td > <b><?php echo number_format($totqt,'2','.',','); ?></b></td>
+	<td ></td>
+	<td ></td>
+    <td ></td>
 	  </tr>
-</table>
 
-<table></table>
-<table></table>
+    <tr>
+        <td colspan="17" style="border: none;">&nbsp;</td>
+        </tr>
+        <tr>
+        <td colspan="17" style="border: none;">&nbsp;</td>
+        </tr>
+        <tr>
+        <td colspan="17" style="border: none;">&nbsp;</td>
+    </tr>
 
-<table style="width: auto;" border="1">
-    <tr>
-        <td colspan="4"></td>
-        <td colspan="3" style="text-align: center; vertical-align: middle;">Dibuat Oleh :</td>
-        <td colspan="4" style="text-align: center; vertical-align: middle;">Diperiksa Oleh :</td>
-        <td colspan="6" style="text-align: center; vertical-align: middle;">Mengetahui :</td>
-    </tr>
-    <tr>
-        <td colspan="4" style="text-align: center; vertical-align: middle;">Nama</td>
-        <td colspan="3" style="text-align: center; vertical-align: middle;"></td>
-        <td colspan="4" style="text-align: center; vertical-align: middle;"></td>
-        <td colspan="6" style="text-align: center; vertical-align: middle;"></td>
-    </tr>
-    <tr>
-        <td colspan="4" style="text-align: center; vertical-align: middle;">Jabatan</td>
-        <td colspan="3" style="text-align: center; vertical-align: middle;"></td>
-        <td colspan="4" style="text-align: center; vertical-align: middle;"></td>
-        <td colspan="6" style="text-align: center; vertical-align: middle;"></td>
-    </tr>
-    <tr>
-        <td colspan="4" style="text-align: center; vertical-align: middle;">Tanggal</td>
-        <td colspan="3" style="text-align: center; vertical-align: middle;"></td>
-        <td colspan="4" style="text-align: center; vertical-align: middle;"></td>
-        <td colspan="6" style="text-align: center; vertical-align: middle;"></td>
-    </tr>
-    <tr>
-        <td colspan="4" style="text-align: center; vertical-align: middle;">Tanda Tangan</td>
-        <td colspan="3" style="text-align: center; vertical-align: middle;"><br><br><br><br></td>
-        <td colspan="4" style="text-align: center; vertical-align: middle;"></td>
-        <td colspan="6" style="text-align: center; vertical-align: middle;"></td>
-    </tr>
+     <tr>
+  <td colspan="4"></td>
+  <td colspan="3" style="text-align: center; vertical-align: middle;">Dibuat Oleh :</td>
+  <td colspan="4" style="text-align: center; vertical-align: middle;">Diperiksa Oleh :</td>
+  <td colspan="6" style="text-align: center; vertical-align: middle;">Mengertahui :</td>
+</tr>
+<tr>
+  <td colspan="4" style="text-align: center; vertical-align: middle;">Nama</td>
+  <td colspan="3" style="text-align: center; vertical-align: middle;"></td>
+  <td colspan="4" style="text-align: center; vertical-align: middle;"></td>
+  <td colspan="6" style="text-align: center; vertical-align: middle;"></td>
+</tr>
+<tr>
+  <td colspan="4" style="text-align: center; vertical-align: middle;">Jabatan</td>
+  <td colspan="3" style="text-align: center; vertical-align: middle;"></td>
+  <td colspan="4" style="text-align: center; vertical-align: middle;"></td>
+  <td colspan="6" style="text-align: center; vertical-align: middle;"></td>
+</tr>
+<tr>
+  <td colspan="4" style="text-align: center; vertical-align: middle;">Tanggal</td>
+  <td colspan="3" style="text-align: center; vertical-align: middle;"></td>
+  <td colspan="4" style="text-align: center; vertical-align: middle;"></td>
+  <td colspan="6" style="text-align: center; vertical-align: middle;"></td>
+</tr>
+<tr>
+  <td colspan="4" style="text-align: center; vertical-align: middle;">Tanda Tangan</td>
+  <td colspan="3" style="text-align: center; vertical-align: middle;"><br><br><br><br></td>
+  <td colspan="4" style="text-align: center; vertical-align: middle;"></td>
+  <td colspan="6" style="text-align: center; vertical-align: middle;"></td>
+</tr>
+
 </table>
 
 

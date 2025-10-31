@@ -45,8 +45,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
   <!-- ChartJS -->
 	<script src="plugins/chart.js/Chart.min.js"></script>	
-	<script src="plugins/chart.js/chart371.js"></script>	
-	<script src="plugins/chart.js/chartjs-plugin-datalabels.js"></script>  	
+	<!-- <script src="plugins/chart.js/chart371.js"></script>	 -->
+	<!-- <script src="plugins/chart.js/chartjs-plugin-datalabels.js"></script>  	 -->
+
   <!-- Theme style -->
   <?php if ($page == "stdlodingdye") {?>
   <!-- X Editable -->
@@ -138,6 +139,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
       </li>
 	  <li class="nav-item">
             <a href="ProductionOrderTracing" class="nav-link">Production Order Tracing</a>
+          </li>
+
+          <li class="nav-item">
+            <a href="MasterRak" class="nav-link">Master Rak</a>
           </li>
         </ul>
 
@@ -489,6 +494,7 @@ $(document).on('click', '.show_detail', function(e) {
     });
   });
 </script>
+<?php if ($page == "stdlodingdye") { ?>
 <script language="javascript">
 	$.fn.editable.defaults.mode = 'popup';
 //	$.fn.editable.defaults.mode = 'inline';
@@ -527,5 +533,6 @@ $(document).on('click', '.show_detail', function(e) {
     })
 
 </script>
+<?php } ?>
 </body>
 </html>

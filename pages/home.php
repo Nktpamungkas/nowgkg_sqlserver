@@ -49,6 +49,18 @@
     width:18px; height:0; border-top:3px solid #dc3545;
     margin-right:6px; display:inline-block; vertical-align:middle;
   }
+  .chart-stats{margin-top:4px;font-size:12px;color:#555}
+  .chart-stats .pill{
+    display:inline-block;background:#f4f6f9;border:1px solid #ddd;
+    border-radius:999px;padding:2px 8px;margin-right:6px
+  }
+  .chart-search{ display:flex; gap:8px; align-items:center; justify-content:center; margin-top:6px; }
+  .chart-search input{
+    max-width:240px; width:100%;
+    padding:4px 8px; border:1px solid #ccc; border-radius:6px; font-size:12px;
+  }
+  .chart-search small{ color:#666; }
+  .chart-search small { display: none; } /* hide ket. samping input search */
 </style>
 
 <?php
@@ -457,42 +469,43 @@
     </script>
 
 <script>
-// ===== util: format angka =====
+// =========================
+// Helpers & Global State
+// =========================
+
+// format angka
 function fmt(n, d){
   return Number(n||0).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
 }
 
-// ===== buat legend HTML (fixed, tidak ikut scroll) =====
+// render legend HTML (tetap di header kartu)
 function renderLegendHTML(chart, holder){
   var html = '';
   chart.data.datasets.forEach(function(ds){
     if (ds.type === 'line') {
-      html += '<span><i class="legend-line" style="border-top-color:'+(ds.borderColor||'#dc3545')+'"></i>'
-           +  (ds.label||'') + '</span>';
+      html += '<span><i class="legend-line" style="border-top-color:'+(ds.borderColor||'#dc3545')+'"></i>' + (ds.label||'') + '</span>';
     } else {
       var bg = (typeof ds.backgroundColor === 'string') ? ds.backgroundColor
                : (Array.isArray(ds.backgroundColor) ? ds.backgroundColor[0] : '#888');
       var bd = ds.borderColor || '#999';
-      html += '<span><i class="legend-swatch" style="background:'+bg+';border-color:'+bd+'"></i>'
-           +  (ds.label||'') + '</span>';
+      html += '<span><i class="legend-swatch" style="background:'+bg+';border-color:'+bd+'"></i>' + (ds.label||'') + '</span>';
     }
   });
   holder.innerHTML = html;
 }
 
-// ===== hitung lebar canvas agar bisa scroll (adaptif utk data sedikit) =====
+// hitung lebar canvas agar bisa scroll (adaptif)
 function canvasWidthFor(labels){
   const n = (labels && labels.length) || 0;
-  if (n <= 1) return 520;   // 1 kategori
-  if (n === 2) return 620;  // 2 kategori
-  if (n === 3) return 760;  // 3 kategori
-  // normal: skala dinamis utk banyak kategori
+  if (n <= 1) return 520;
+  if (n === 2) return 620;
+  if (n === 3) return 760;
   var avgLen = labels.reduce((s,x)=>s+String(x).length,0) / n;
   var perCat = Math.max(10, Math.min(30, 7 * avgLen)); // 10..30 px per kategori
   return Math.max(900, Math.min(40000, Math.round(n * perCat)));
 }
 
-// ===== factory kolom (2 grafik per baris), header fixed + canvas scroll =====
+// factory kolom (2 grafik per baris), header fixed + canvas scroll
 function makeCol(letter){
   var col = document.createElement('div');
   col.className = 'col-lg-6 mb-4';
@@ -509,7 +522,12 @@ function makeCol(letter){
   fixed.className = 'chart-head';
   fixed.innerHTML = [
     '<div class="chart-title">Lokasi Awal "' + letter + '"</div>',
-    '<div class="chart-legend" id="legend-' + letter + '"></div>'
+    '<div class="chart-legend" id="legend-' + letter + '"></div>',
+    '<div class="chart-stats" id="stats-' + letter + '"></div>',
+    '<div class="chart-search">',
+      '<input type="text" placeholder="Search..." id="search-' + letter + '" />',
+      '<small id="meta-' + letter + '"></small>',
+    '</div>'
   ].join('');
 
   var scroller = document.createElement('div');
@@ -537,35 +555,164 @@ function makeCol(letter){
   return { col, fixed, scroller, inner, canvas };
 }
 
+var searchState = {}; // { 'A': {matches:[...], ptr:0} }
+function sum(arr){ return (arr||[]).reduce((s,x)=> s + (Number(x)||0), 0); }
+function debounce(fn, ms){ let t; return function(){ clearTimeout(t); t=setTimeout(()=>fn.apply(this, arguments), ms); }; }
+function computeYMax(rolls, weights, caps){
+  var maxVal = 0;
+  if (rolls && rolls.length)   maxVal = Math.max(maxVal, Math.max.apply(null, rolls));
+  if (weights && weights.length) maxVal = Math.max(maxVal, Math.max.apply(null, weights));
+  if (caps && caps.length)     maxVal = Math.max(maxVal, Math.max.apply(null, caps));
+  return Math.max(200, Math.ceil(maxVal/200)*200);
+}
+
+// scroll ke index bar tertentu (pusatkan)
+function scrollToIndex(letter, index, uis, charts){
+  var ui = uis[letter];
+  var chart = charts[letter];
+  if (!ui || !chart) return;
+  var scaleX = chart.scales['x-axis-0'];
+  if (!scaleX) return;
+  var x = scaleX.getPixelForTick(index);
+  var target = Math.max(0, x - (ui.scroller.clientWidth/2));
+  ui.scroller.scrollLeft = target;
+}
+
+// tampilkan tooltip pada bar di index tertentu
+function showTooltipAt(letter, index, charts){
+  var chart = charts[letter];
+  if (!chart) return;
+
+  // Kumpulkan elemen aktif dari SEMUA dataset pada index yang sama
+  var actives = [];
+  chart.data.datasets.forEach(function(ds, di){
+    // lewati dataset yang disembunyikan
+    if (chart.getDatasetMeta(di).hidden) return;
+
+    var meta = chart.getDatasetMeta(di);
+    if (!meta || !meta.data) return;
+
+    var el = meta.data[index];
+    if (el) actives.push(el);
+  });
+
+  // Jika ada elemen, aktifkan tooltip-nya (Chart.js v2)
+  if (actives.length){
+    chart.tooltip._active = actives;
+    chart.tooltip.update(true);
+    chart.draw();
+  } else {
+    // fallback: bersihkan tooltip kalau tidak ada elemen
+    chart.tooltip._active = [];
+    chart.tooltip.update(true);
+    chart.draw();
+  }
+}
+
+// =========================
+// Highlight label X blink merah
+// =========================
+var activeHighlight = {}; // { 'A': { index: 3 } }
+var blinkRaf = {};        // RAF id per huruf
+
+Chart.plugins.register({
+  afterDraw: function(chart){
+    var letter = chart.config._letter;
+    var st = activeHighlight[letter];
+    if (!st || st.index == null) return;
+
+    var scaleX = chart.scales['x-axis-0'];
+    var scaleY = chart.scales['y-axis-0'];
+    if (!scaleX || !scaleY) return;
+
+    var idx = st.index;
+    if (idx < 0 || idx >= scaleX.ticks.length) return;
+
+    var ctx = chart.chart.ctx;
+    var x = scaleX.getPixelForTick(idx);
+    var label = scaleX.ticks[idx];
+
+    // ambil style tick dari opsi (biar konsisten dengan rotasi 60°)
+    var tickOpts = (chart.options.scales && chart.options.scales.xAxes && chart.options.scales.xAxes[0].ticks) || {};
+    var fontSize   = (tickOpts.fontSize || 11);
+    var fontFamily = (Chart.defaults && Chart.defaults.global && Chart.defaults.global.defaultFontFamily) || 'Arial';
+    var rotationDeg = 60;
+    var rot = -rotationDeg * Math.PI/180;
+
+    // posisi baseline text (sedikit di bawah area plot)
+    var yBase = scaleY.bottom + 10;
+
+    // alpha kedip 0.35..1
+    var t = performance.now() * 0.008;
+    var alpha = 0.35 + 0.65 * Math.abs(Math.sin(t));
+
+    ctx.save();
+    ctx.translate(x, yBase);
+    ctx.rotate(rot);
+    ctx.fillStyle = 'rgba(255,0,0,'+alpha+')';
+    ctx.font = fontSize + 'px ' + fontFamily;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(label), 0, 0);
+    ctx.restore();
+  }
+});
+
+function startBlinkLoop(letter){
+  if (blinkRaf[letter]) return;
+  function loop(){
+    if (charts && charts[letter]) charts[letter].draw();
+    blinkRaf[letter] = requestAnimationFrame(loop);
+  }
+  loop();
+}
+function stopBlinkLoop(letter){
+  if (blinkRaf[letter]) cancelAnimationFrame(blinkRaf[letter]);
+  blinkRaf[letter] = null;
+}
+
+// =========================
+// Build charts
+// =========================
+
+// charts & uis jadi global (agar plugin & scroll bisa akses)
+var charts = {};
+var uis = {};
+
 (function(){
   var payload = <?php echo json_encode($chartPayload, JSON_NUMERIC_CHECK); ?>;
   var container = document.getElementById('chartsByLetter');
   container.innerHTML = '';
 
+  var original = {};
+
   payload.forEach(function(g){
     if (!g.labels || !g.labels.length) return;
 
+    original[g.letter] = g;
+
     var ui = makeCol(g.letter);
     container.appendChild(ui.col);
+    uis[g.letter] = ui;
 
-    // lebar inner besar → scroller akan punya horizontal scrollbar
+    // lebar inner → memunculkan horizontal scrollbar
     var targetW = canvasWidthFor(g.labels);
     ui.inner.style.width = targetW + 'px';
 
     var nCat = g.labels.length;
     var catPct  = nCat <= 3 ? 0.6 : 0.8;
     var barPct  = 0.95;
-    var thick   = nCat <= 3 ? 28 : null; 
+    var thick   = nCat <= 3 ? 28 : null;
 
     var ctx = ui.canvas.getContext('2d');
     var chart = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: g.labels,
+        labels: g.labels.slice(),
         datasets: [
           Object.assign({
             label: 'Roll',
-            data: g.rolls,
+            data: g.rolls.slice(),
             backgroundColor: 'rgba(54,162,235,0.35)',
             borderColor:     'rgba(54,162,235,1)',
             borderWidth: 1,
@@ -575,7 +722,7 @@ function makeCol(letter){
           }, thick ? { barThickness: thick } : {}),
           Object.assign({
             label: 'Weight (kg)',
-            data: g.weights,
+            data: g.weights.slice(),
             backgroundColor: 'rgba(255,159,64,0.30)',
             borderColor:     'rgba(255,159,64,1)',
             borderWidth: 1,
@@ -586,7 +733,7 @@ function makeCol(letter){
           {
             type: 'line',
             label: 'Max Capacity (kg)',
-            data: g.caps,
+            data: g.caps.slice(),
             borderColor: 'rgba(220,53,69,1)',
             backgroundColor: 'rgba(220,53,69,0.05)',
             borderWidth: 2,
@@ -599,10 +746,10 @@ function makeCol(letter){
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        // Title & legend canvas dimatikan → kita render HTML fixed di atas scroller
         title:  { display: false },
         legend: { display: false },
         tooltips: {
+          enabled: true,
           mode: 'index', intersect: false,
           callbacks: {
             title: function(items, data){
@@ -641,8 +788,71 @@ function makeCol(letter){
       }
     });
 
-    // render legend HTML fixed (di tengah, tak ikut scroll)
+    charts[g.letter] = chart;
+    chart.config._letter = g.letter; // untuk plugin blink
+
+    // legend & stats
     renderLegendHTML(chart, document.getElementById('legend-' + g.letter));
+    var statsEl = document.getElementById('stats-' + g.letter);
+    if (statsEl){
+      statsEl.innerHTML =
+        '<span class="pill">Total Roll: ' + fmt(sum(g.rolls), 0) + '</span>' +
+        '<span class="pill">Total Weight: ' + fmt(sum(g.weights), 2) + ' kg</span>';
+    }
+    var metaEl = document.getElementById('meta-' + g.letter);
+    if (metaEl){ metaEl.textContent = g.labels.length + ' lokasi'; }
+
+    // ===== Input Cari: lompat + tooltip + label X berkedip merah =====
+    var input = document.getElementById('search-' + g.letter);
+    if (input){
+      var runSearch = debounce(function(){
+        var q = (input.value || '').trim().toLowerCase();
+        var labels = chart.data.labels;
+        var matches = [];
+        if (q){
+          for (var i=0;i<labels.length;i++){
+            if (String(labels[i]).toLowerCase().indexOf(q) !== -1) matches.push(i);
+          }
+        }
+        searchState[g.letter] = { matches: matches, ptr: 0 };
+
+        if (matches.length){
+          var idx = matches[0];
+          scrollToIndex(g.letter, idx, uis, charts);
+          showTooltipAt(g.letter, idx, charts);
+          activeHighlight[g.letter] = { index: idx }; // Nyalakan blink label X
+          startBlinkLoop(g.letter);
+          if (metaEl){ metaEl.textContent = labels.length + ' lokasi (match: ' + matches.length + ')'; }
+        } else {
+          // kosongkan tooltip & matikan highlight
+          chart.tooltip._active = [];
+          chart.tooltip.update(true);
+          chart.draw();
+          activeHighlight[g.letter] = { index: null };
+          stopBlinkLoop(g.letter);
+          if (metaEl){ metaEl.textContent = labels.length + ' lokasi (0 match)'; }
+        }
+      }, 200);
+
+      input.addEventListener('input', runSearch);
+
+      // Enter → next match (loop)
+      input.addEventListener('keydown', function(ev){
+        if (ev.key === 'Enter'){
+          var st = searchState[g.letter] || {matches:[],ptr:0};
+          if (!st.matches.length) return;
+          st.ptr = (st.ptr + 1) % st.matches.length;
+          searchState[g.letter] = st;
+
+          var idx = st.matches[st.ptr];
+          scrollToIndex(g.letter, idx, uis, charts);
+          showTooltipAt(g.letter, idx, charts);
+          activeHighlight[g.letter] = { index: idx }; // pindahkan blink ke match berikutnya
+          startBlinkLoop(g.letter);
+          ev.preventDefault();
+        }
+      });
+    }
   });
 })();
 </script>

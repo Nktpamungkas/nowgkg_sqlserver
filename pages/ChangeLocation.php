@@ -90,7 +90,7 @@ $Awal = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
                                         WHERE
                                             ITEMTYPECODE = 'KGF'
                                             AND LOGICALWAREHOUSECODE = 'M021'
-                                            AND (TRIM(TRANSACTIONDATE) || ' ' || TRIM(TRANSACTIONTIME) BETWEEN '$tanggal_waktu1' AND '$tanggal_waktu2') 
+                                            AND (TIMESTAMP(TRANSACTIONDATE, TRANSACTIONTIME) BETWEEN TIMESTAMP('$tanggal_waktu1') AND TIMESTAMP('$tanggal_waktu2')) 
                                             $WhereUser";
                             $stmt = db2_exec($conn1, $queryDB2, array('cursor' => DB2_SCROLLABLE));
                             $totalQuality = 0;
@@ -135,7 +135,7 @@ $Awal = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
                                                 s.TEMPLATECODE = '301'
                                                 AND s.ITEMTYPECODE = 'KGF'
                                                 AND s.LOGICALWAREHOUSECODE = 'M021'
-                                                AND (TRIM(s.TRANSACTIONDATE) || ' ' || TRIM(s.TRANSACTIONTIME) BETWEEN '$tanggal_waktu1' AND '$tanggal_waktu2')
+                                                AND (TIMESTAMP(s.TRANSACTIONDATE, s.TRANSACTIONTIME) BETWEEN TIMESTAMP('$tanggal_waktu1') AND TIMESTAMP('$tanggal_waktu2'))
                                                 AND s.ITEMELEMENTCODE = '$rowdb2[ITEMELEMENTCODE]' $WhereProject
                                             ORDER BY
                                                 s.TRANSACTIONDATE DESC
@@ -145,7 +145,7 @@ $Awal = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
                                             s.TEMPLATECODE = '302'
                                             AND s.ITEMTYPECODE = 'KGF'
                                             AND s.LOGICALWAREHOUSECODE = 'M021'
-                                            AND (TRIM(s.TRANSACTIONDATE) || ' ' || TRIM(s.TRANSACTIONTIME) BETWEEN '$tanggal_waktu1' AND '$tanggal_waktu2')
+                                            AND (TIMESTAMP(s.TRANSACTIONDATE, s.TRANSACTIONTIME) BETWEEN TIMESTAMP('$tanggal_waktu1') AND TIMESTAMP('$tanggal_waktu2'))
                                             AND s.ITEMELEMENTCODE = '$rowdb2[ITEMELEMENTCODE]' $WhereProject
                                         LIMIT 1";
                                 $stmt1 = db2_exec($conn1, $queryDB21, array('cursor' => DB2_SCROLLABLE));

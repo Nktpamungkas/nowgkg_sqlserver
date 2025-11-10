@@ -53,6 +53,15 @@ $Awal = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
     <div class="card card-warning">
         <div class="card-header">
             <h3 class="card-title">Data Change Location GKG</h3>
+            <?php if($Awal!="") {
+                $Awal1 = date('Y-m-d', strtotime($Awal . ' +1 day'));
+                $tanggal_waktu1 = $Awal . " " . "07:00:00";
+                $tanggal_waktu2 = $Awal1 . " " . "07:00:00";
+            }
+            if($Awal!=""):
+            ?>
+            <a href="pages/cetak/laplocation_excel.php?awal=<?php echo $tanggal_waktu1;?>&akhir=<?php echo $tanggal_waktu2;?>" class="btn bg-blue float-right" target="_blank">Cetak Excel</a>  
+            <?php endif; ?>
         </div>
         <!-- /.card-header -->
         <div class="card-body">
@@ -138,7 +147,7 @@ $Awal = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
                                                 AND (TIMESTAMP(s.TRANSACTIONDATE, s.TRANSACTIONTIME) BETWEEN TIMESTAMP('$tanggal_waktu1') AND TIMESTAMP('$tanggal_waktu2'))
                                                 AND s.ITEMELEMENTCODE = '$rowdb2[ITEMELEMENTCODE]' $WhereProject
                                             ORDER BY
-                                                s.TRANSACTIONDATE DESC
+                                                s.TRANSACTIONDATE DESC, s.TRANSACTIONTIME DESC
                                             LIMIT 1) AS SEBELUM ON
                                             SEBELUM.TRANSACTIONNUMBER = S.TRANSACTIONNUMBER
                                         WHERE

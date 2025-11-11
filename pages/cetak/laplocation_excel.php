@@ -231,7 +231,7 @@ if ($filter_shift != '') {
 <table width="125%" border="1" align="center">
   <tr align="center">
     <td><b>No</b></td>
-    <td><b>Tanggal</b></td>
+    <td><b>Tanggal Masuk</b></td>
     <td><b>No Bon</b></td>
     <td><b>Code</b></td>
     <td><b>Shift</b></td>

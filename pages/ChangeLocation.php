@@ -60,7 +60,25 @@ $Awal = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
             }
             if($Awal!=""):
             ?>
-            <a href="pages/cetak/laplocation_excel.php?awal=<?php echo $tanggal_waktu1;?>&akhir=<?php echo $tanggal_waktu2;?>" class="btn bg-blue float-right" target="_blank">Cetak Excel</a>  
+            <div class="btn-group float-right">
+                <button type="button" class="btn bg-blue dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Cetak Excel
+                </button>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item" href="pages/cetak/laplocation_excel.php?awal=<?php echo $tanggal_waktu1;?>&akhir=<?php echo $tanggal_waktu2;?>&shift=" target="_blank">
+                    Shift All
+                    </a>
+                    <a class="dropdown-item" href="pages/cetak/laplocation_excel.php?awal=<?php echo $tanggal_waktu1;?>&akhir=<?php echo $tanggal_waktu2;?>&shift=Shift 1" target="_blank">
+                    Shift 1
+                    </a>
+                    <a class="dropdown-item" href="pages/cetak/laplocation_excel.php?awal=<?php echo $tanggal_waktu1;?>&akhir=<?php echo $tanggal_waktu2;?>&shift=Shift 2" target="_blank">
+                    Shift 2
+                    </a>
+                    <a class="dropdown-item" href="pages/cetak/laplocation_excel.php?awal=<?php echo $tanggal_waktu1;?>&akhir=<?php echo $tanggal_waktu2;?>&shift=Shift 3" target="_blank">
+                    Shift 3
+                    </a>
+                </div>
+                </div>
             <?php endif; ?>
         </div>
         <!-- /.card-header -->

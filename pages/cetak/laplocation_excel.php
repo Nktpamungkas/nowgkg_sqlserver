@@ -1,6 +1,18 @@
 <?php
+$filter_shift	= isset($_GET['shift']) ? $_GET['shift'] : '';
+if($filter_shift =='Shift 1'){
+  $name_filter = 'shift_1';
+}else if($filter_shift =='Shift 2'){
+  $name_filter = 'shift_2';
+}else if($filter_shift =='Shift 3'){
+  $name_filter = 'shift_3';
+}else{
+  $name_filter = 'ALL';
+}
+$tanggal_awal = explode(' ', $_GET['awal'])[0];
+
 header("Content-type: application/octet-stream");
-header("Content-Disposition: attachment; filename=change_location".date($_GET['awal']).".xls");//ganti nama sesuai keperluan
+header("Content-Disposition: attachment; filename=change_location_".$tanggal_awal."_".$name_filter.".xls");//ganti nama sesuai keperluan
 header("Pragma: no-cache");
 header("Expires: 0");
 //disini script laporan anda
@@ -9,6 +21,7 @@ header("Expires: 0");
 <?php
 $Awal	= isset($_GET['awal']) ? $_GET['awal'] : '';
 $Akhir	= isset($_GET['akhir']) ? $_GET['akhir'] : '';
+// $filter_shift	= isset($_GET['shift']) ? $_GET['shift'] : '';
 ?>
 <?php
 ini_set("error_reporting", 1);
@@ -76,6 +89,18 @@ WHERE
 	$stmt1   = db2_exec($conn1,$sqlDB21, array('cursor'=>DB2_SCROLLABLE));
 	//}				  
     while($rowdb21 = db2_fetch_assoc($stmt1)){
+      if($rowdb21['TRANSACTIONTIME']>='07:00:00' && $rowdb21['TRANSACTIONTIME']<='15:00:00'){
+        $shift = 'Shift 1';
+      }else if($rowdb21['TRANSACTIONTIME']>='15:00:00' && $rowdb21['TRANSACTIONTIME']<='23:00:00'){
+        $shift = 'Shift 2';
+      } else {
+        $shift = 'Shift 3';
+      }
+  
+      if ($filter_shift != '' && stripos($shift, $filter_shift) === false) {
+        continue;
+      }
+
       $sql2 = "SELECT
                 ITEMELEMENTCODE,
                 TRIM(ORDERCODE) || ' - ' || TRIM(ORDERLINE) AS BON,
@@ -98,7 +123,7 @@ WHERE
                 AND x.ITEMELEMENTCODE ='$rowdb21[ITEMELEMENTCODE]'";
 	$stmt2   = db2_exec($conn1,$sql2, array('cursor'=>DB2_SCROLLABLE));
   $rowdb22 = db2_fetch_assoc($stmt2);
-
+  $nobon = $rowdb22['BON'];
   $sql3 = "SELECT
               ad.VALUESTRING AS NO_MESIN
             FROM
@@ -114,16 +139,6 @@ WHERE
   $rowdb23 = db2_fetch_assoc($stmt3);
   // $no ++;
 
-  if($rowdb21['TRANSACTIONTIME']>='07:00:00' && $rowdb21['TRANSACTIONTIME']<='15:00:00'){
-    $shift = 'Shift 1';
-  }else if($rowdb21['TRANSACTIONTIME']>='15:00:00' && $rowdb21['TRANSACTIONTIME']<='23:00:00'){
-    $shift = 'Shift 2';
-  } else {
-    $shift = 'Shift 3';
-  }
-
-   $nobon = $rowdb22['BON'];
-
   $data = [
     'date'          => $rowdb22['DATE_TRANSACTION'],
     'nobon'         => $nobon,
@@ -134,6 +149,7 @@ WHERE
     'lokasi_after'  => $rowdb21['LOCATION_AFTER'],
     'lokasi_before' => $rowdb21['LOCATION_BEFORE'],
     'user'          => $rowdb21['CREATIONUSER'],
+    'elements'      => $rowdb21['ITEMELEMENTCODE'],
   ];
 
   // --- PROSES GROUPING BERDASARKAN NOBON ---
@@ -142,12 +158,13 @@ WHERE
       'nobon'         => $data['nobon'],
       'date'          => $data['date'],
       'code'          => $data['code'],
-      'shift'         => $data['shift'],
+      'shift'         => [$data['shift']],
       'mesin'         => [$data['mesin']],
       'qty'           => $data['qty'],
       'roll'          => 1,
       'lokasi_after'  => [$data['lokasi_after']],
       'user'          => [$data['user']],
+      'elements'      => [$data['elements']],
     ];
   } else {
 
@@ -165,6 +182,14 @@ WHERE
     if (!in_array($data['user'], $group_data[$nobon]['user'])) {
       $group_data[$nobon]['user'][] = $data['user'];
     }
+
+    if (!in_array($data['shift'], $group_data[$nobon]['shift'])) {
+      $group_data[$nobon]['shift'][] = $data['shift'];
+    }
+
+    if (!in_array($data['elements'], $group_data[$nobon]['elements'])) {
+      $group_data[$nobon]['elements'][] = $data['elements'];
+    }
   }
 }
 
@@ -172,10 +197,22 @@ foreach ($group_data as &$item) {
   $item['lokasi_after'] = implode(', ', $item['lokasi_after']);
   $item['user']         = implode(', ', $item['user']);
   $item['mesin']         = implode(', ', $item['mesin']);
+  $item['elements']         = implode(', ', $item['elements']);
+  $item['shift']         = implode(', ', $item['shift']);
 }
 unset($item);
 
+if ($filter_shift != '') {
+  $filtered_data = array_filter($group_data, function($item) use ($filter_shift) {
+    return stripos($item['shift'], $filter_shift) !== false;
+  });
+} else {
+  $filtered_data = $group_data;
+}
+
+// echo '<pre>';
 // print_r($group_data);
+// echo '</pre>';
 ?>
 
 <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
@@ -185,11 +222,12 @@ unset($item);
     <!-- Judul -->
     <div style="text-align: center;">
         <h1 style="margin: 0;">LAPORAN CHANGE LOCATION GKG</h1>
-        <!-- <p>NO. REVISI:<br/>TGL Terbit:</p> -->
+        <h2 style="margin: 0;">No. Form: FW-19-GKG-19/05</h2>
+        <!-- <p>NO. Form: FW-19-GKG-19/05<br/>TGL Terbit:</p> -->
     </div>
 </div>
 
-<div align="LEFT">TGL : <?php echo date($_GET['awal']); ?></div>
+<div align="LEFT">TGL : <?php echo $tanggal_awal; ?></div>
 <table width="125%" border="1" align="center">
   <tr align="center">
     <td><b>No</b></td>
@@ -209,7 +247,7 @@ unset($item);
   $total_qty = 0;
   $total_roll = 0;
 
-  foreach ($group_data as $row) {
+  foreach ($filtered_data as $row) {
     $total_qty  += $row['qty'];
     $total_roll += $row['roll'];
   ?>

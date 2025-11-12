@@ -117,6 +117,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			  <li><a href="StockKainGKG" class="dropdown-item">Stock Kain GKG</a></li>
 			  <li><a href="CekGreigeMasuk" class="dropdown-item">Cek Kain Greige Masuk</a></li>
 			  <li><a href="CekSuratJalanMasuk" class="dropdown-item">Cek Surat Jalan Masuk</a></li>
+			  <li><a href="CekChangeLocation" class="dropdown-item">Cek Change Location</a></li>
 
 			</ul>
           </li>

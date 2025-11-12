@@ -82,6 +82,7 @@ $Akhir	= isset($_POST['tgl_akhir']) ? $_POST['tgl_akhir'] : '';
                     <th rowspan="2" valign="middle" style="text-align: center">Block</th>
                     <th rowspan="2" valign="middle" style="text-align: center">Balance</th>
                     <th rowspan="2" valign="middle" style="text-align: center">User</th>
+                    <th rowspan="2" valign="middle" style="text-align: center">Status Change</th>
                     </tr>
                   <tr>
                     <th valign="middle" style="text-align: center">Lebar</th>
@@ -308,6 +309,57 @@ $rowdb30 = db2_fetch_assoc($stmt10);
 if($rowdb22['LEGALNAME1']==""){$langganan="";}else{$langganan=$rowdb22['LEGALNAME1'];}
 if($rowdb22['ORDERPARTNERBRANDCODE']==""){$buyer="";}else{$buyer=$rowdb22['ORDERPARTNERBRANDCODE'];}
 if($rowdb21['QTY_KG']>0){$qtyB=$rowdb21['QTY_KG'];}else{$qtyB=$rowdb21['QTY1_KG'];}		
+
+$query_element = 
+                "SELECT
+                    ITEMELEMENTCODE
+                  FROM
+                    STOCKTRANSACTION
+                  WHERE
+                    ORDERCODE = '$rowdb21[PROVISIONALCODE]'
+                    AND ORDERLINE = '$rowdb21[ORDERLINE]'
+                    AND LOGICALWAREHOUSECODE = 'M021'
+                  GROUP BY
+                    ITEMELEMENTCODE";
+
+$stmt_element = db2_exec($conn1, $query_element, array('cursor' => DB2_SCROLLABLE));
+
+$element_codes = array();
+while ($row_el = db2_fetch_assoc($stmt_element)) {
+    if (isset($row_el['ITEMELEMENTCODE']) && $row_el['ITEMELEMENTCODE'] !== '') {
+        $element_codes[] = $row_el['ITEMELEMENTCODE'];
+    }
+}
+$jumlah_element = count($element_codes);
+
+$missing_count = 0;
+foreach ($element_codes as $elcode) {
+    $awal_akhir = "SELECT
+                    TEMPLATECODE,
+                    WAREHOUSELOCATIONCODE,
+                    TRANSACTIONDATE
+                  FROM
+                    DB2ADMIN.STOCKTRANSACTION STOCKTRANSACTION
+                  WHERE
+                    STOCKTRANSACTION.ITEMELEMENTCODE = '" . addslashes($elcode) . "'
+                    AND STOCKTRANSACTION.TEMPLATECODE = '302'
+                  ORDER BY
+                    STOCKTRANSACTION.TRANSACTIONDATE DESC
+                  FETCH FIRST
+                    1 ROWS ONLY";
+$excee = db2_exec($conn1, $awal_akhir, array('cursor' => DB2_SCROLLABLE));
+$exce  = db2_fetch_assoc($excee);
+    if (!$exce || empty($exce)) {
+        $missing_count++;
+    }
+}
+
+$stts = '';
+if ($jumlah_element > 0 && $missing_count === 0) {
+    $stts = "<small class='badge badge-success'>OK</small>";
+        } else {
+    $stts = "<small class='badge badge-danger'>NOT OK</small> <span>(" . $missing_count . ")</span>";
+        }
 ?>
 	  <tr>
 	  <td style="text-align: center"><?php echo $no;?></td>
@@ -339,6 +391,8 @@ if($rowdb21['QTY_KG']>0){$qtyB=$rowdb21['QTY_KG'];}else{$qtyB=$rowdb21['QTY1_KG'
       <td><?php echo $rowdb21['WHSLOCATIONWAREHOUSEZONECODE']."-".$rowdb21['WAREHOUSELOCATIONCODE']; ?></td>
       <td><?php echo $rowdb24['WAREHOUSELOCATIONCODE']; ?></td>
       <td><?php  echo $rowdb21['CREATIONUSER']; ?></td>
+      <!-- STATUS -->
+      <td style="text-align: center"><?php echo $stts ; ?></td>
       </tr>
 	  				  
 	<?php 
@@ -369,6 +423,7 @@ if($rowdb21['QTY_KG']>0){$qtyB=$rowdb21['QTY_KG'];}else{$qtyB=$rowdb21['QTY1_KG'
 	    <td colspan="3" style="text-align: right"><strong>Total</strong></td>
 	    <td style="text-align: right"><strong><?php echo $tMRol;?></strong></td>
 	    <td style="text-align: right"><strong><?php echo number_format(round($tMKG,2),2);?></strong></td>
+	    <td>&nbsp;</td>
 	    <td>&nbsp;</td>
 	    <td>&nbsp;</td>
 	    <td>&nbsp;</td>

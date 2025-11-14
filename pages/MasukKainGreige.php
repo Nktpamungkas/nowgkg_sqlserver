@@ -330,11 +330,24 @@ while ($row_el = db2_fetch_assoc($stmt_element)) {
         $element_codes[] = $row_el['ITEMELEMENTCODE'];
     }
 }
-$jumlah_element = count($element_codes);
 
+// Cek keberadaan element di BALANCE; hanya pakai yang ada di BALANCE
+$elements_in_balance = array();
+foreach ($element_codes as $code) {
+    $cekbalance = "SELECT 1 FROM BALANCE WHERE ELEMENTSCODE = '" . addslashes($code) . "' FETCH FIRST 1 ROWS ONLY";
+    $stmtCek = db2_exec($conn1, $cekbalance, array('cursor' => DB2_SCROLLABLE));
+    $rowCek  = db2_fetch_assoc($stmtCek);
+    if (!empty($rowCek)) {
+        $elements_in_balance[] = $code;
+    }
+}
+
+// Jumlah element yang ada di BALANCE
+$jumlah_element = count($elements_in_balance);
 $missing_count = 0;
 $user  = '';
-foreach ($element_codes as $elcode) {
+// Hanya periksa awal/akhir untuk element yang ada di BALANCE
+foreach ($elements_in_balance as $elcode) {
     $awal_akhir = "SELECT
                     TEMPLATECODE,
                     WAREHOUSELOCATIONCODE,
@@ -361,11 +374,16 @@ $exce  = db2_fetch_assoc($excee);
 }
 
 $stts = '';
-if ($jumlah_element > 0 && $missing_count === 0) {
+// Jika element_codes tidak ada di hasil cekbalance (BALANCE), maka status OK
+if ($jumlah_element === 0) {
     $stts = "<small class='badge badge-success'>OK</small>";
-        } else {
+} elseif ($missing_count === 0) {
+    // Jika ada di BALANCE dan tidak ada yang missing, juga OK
+    $stts = "<small class='badge badge-success'>OK</small>";
+} else {
+    // Selain kondisi di atas, NOT OK dan tampilkan jumlah missing
     $stts = "<small class='badge badge-danger'>NOT OK</small> <span>(" . $missing_count . ")</span>";
-        }
+}
 ?>
 	  <tr>
 	  <td style="text-align: center"><?php echo $no;?></td>

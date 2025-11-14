@@ -333,11 +333,13 @@ while ($row_el = db2_fetch_assoc($stmt_element)) {
 $jumlah_element = count($element_codes);
 
 $missing_count = 0;
+$user  = '';
 foreach ($element_codes as $elcode) {
     $awal_akhir = "SELECT
                     TEMPLATECODE,
                     WAREHOUSELOCATIONCODE,
-                    TRANSACTIONDATE
+                    TRANSACTIONDATE,
+                    CREATIONUSER
                   FROM
                     DB2ADMIN.STOCKTRANSACTION STOCKTRANSACTION
                   WHERE
@@ -351,6 +353,10 @@ $excee = db2_exec($conn1, $awal_akhir, array('cursor' => DB2_SCROLLABLE));
 $exce  = db2_fetch_assoc($excee);
     if (!$exce || empty($exce)) {
         $missing_count++;
+    } else {
+        if (isset($exce['CREATIONUSER']) && $exce['CREATIONUSER'] !== '') {
+            $user = $exce['CREATIONUSER'];
+        }
     }
 }
 
@@ -392,7 +398,9 @@ if ($jumlah_element > 0 && $missing_count === 0) {
       <td><?php echo $rowdb24['WAREHOUSELOCATIONCODE']; ?></td>
       <td><?php  echo $rowdb21['CREATIONUSER']; ?></td>
       <!-- STATUS -->
-      <td style="text-align: center"><?php echo $stts ; ?></td>
+      <td style="text-align: center">
+        <?php if (!empty($rowdb24['WAREHOUSELOCATIONCODE'])) { echo $stts; if (!empty($user)) { echo ' <small>('.htmlspecialchars($user, ENT_QUOTES,'UTF-8').')</small>'; } } ?>
+      </td>
       </tr>
 	  				  
 	<?php 

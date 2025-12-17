@@ -82,6 +82,7 @@ $Akhir	= isset($_POST['tgl_akhir']) ? $_POST['tgl_akhir'] : '';
                     <th rowspan="2" valign="middle" style="text-align: center">Block</th>
                     <th rowspan="2" valign="middle" style="text-align: center">Balance</th>
                     <th rowspan="2" valign="middle" style="text-align: center">User</th>
+                    <th rowspan="2" valign="middle" style="text-align: center">Status Change</th>
                     </tr>
                   <tr>
                     <th valign="middle" style="text-align: center">Lebar</th>
@@ -308,6 +309,81 @@ $rowdb30 = db2_fetch_assoc($stmt10);
 if($rowdb22['LEGALNAME1']==""){$langganan="";}else{$langganan=$rowdb22['LEGALNAME1'];}
 if($rowdb22['ORDERPARTNERBRANDCODE']==""){$buyer="";}else{$buyer=$rowdb22['ORDERPARTNERBRANDCODE'];}
 if($rowdb21['QTY_KG']>0){$qtyB=$rowdb21['QTY_KG'];}else{$qtyB=$rowdb21['QTY1_KG'];}		
+
+$query_element = 
+                "SELECT
+                    ITEMELEMENTCODE
+                  FROM
+                    STOCKTRANSACTION
+                  WHERE
+                    ORDERCODE = '$rowdb21[PROVISIONALCODE]'
+                    AND ORDERLINE = '$rowdb21[ORDERLINE]'
+                    AND LOGICALWAREHOUSECODE = 'M021'
+                  GROUP BY
+                    ITEMELEMENTCODE";
+
+$stmt_element = db2_exec($conn1, $query_element, array('cursor' => DB2_SCROLLABLE));
+
+$element_codes = array();
+while ($row_el = db2_fetch_assoc($stmt_element)) {
+    if (isset($row_el['ITEMELEMENTCODE']) && $row_el['ITEMELEMENTCODE'] !== '') {
+        $element_codes[] = $row_el['ITEMELEMENTCODE'];
+    }
+}
+
+// Cek keberadaan element di BALANCE; hanya pakai yang ada di BALANCE
+$elements_in_balance = array();
+foreach ($element_codes as $code) {
+    $cekbalance = "SELECT 1 FROM BALANCE WHERE ELEMENTSCODE = '" . addslashes($code) . "' FETCH FIRST 1 ROWS ONLY";
+    $stmtCek = db2_exec($conn1, $cekbalance, array('cursor' => DB2_SCROLLABLE));
+    $rowCek  = db2_fetch_assoc($stmtCek);
+    if (!empty($rowCek)) {
+        $elements_in_balance[] = $code;
+    }
+}
+
+// Jumlah element yang ada di BALANCE
+$jumlah_element = count($elements_in_balance);
+$missing_count = 0;
+$user  = '';
+// Hanya periksa awal/akhir untuk element yang ada di BALANCE
+foreach ($elements_in_balance as $elcode) {
+    $awal_akhir = "SELECT
+                    TEMPLATECODE,
+                    WAREHOUSELOCATIONCODE,
+                    TRANSACTIONDATE,
+                    CREATIONUSER
+                  FROM
+                    DB2ADMIN.STOCKTRANSACTION STOCKTRANSACTION
+                  WHERE
+                    STOCKTRANSACTION.ITEMELEMENTCODE = '" . addslashes($elcode) . "'
+                    AND STOCKTRANSACTION.TEMPLATECODE = '302'
+                  ORDER BY
+                    STOCKTRANSACTION.TRANSACTIONDATE DESC
+                  FETCH FIRST
+                    1 ROWS ONLY";
+$excee = db2_exec($conn1, $awal_akhir, array('cursor' => DB2_SCROLLABLE));
+$exce  = db2_fetch_assoc($excee);
+    if (!$exce || empty($exce)) {
+        $missing_count++;
+    } else {
+        if (isset($exce['CREATIONUSER']) && $exce['CREATIONUSER'] !== '') {
+            $user = $exce['CREATIONUSER'];
+        }
+    }
+}
+
+$stts = '';
+// Jika element_codes tidak ada di hasil cekbalance (BALANCE), maka status OK
+if ($jumlah_element === 0) {
+    $stts = "<small class='badge badge-success'>OK</small>";
+} elseif ($missing_count === 0) {
+    // Jika ada di BALANCE dan tidak ada yang missing, juga OK
+    $stts = "<small class='badge badge-success'>OK</small>";
+} else {
+    // Selain kondisi di atas, NOT OK dan tampilkan jumlah missing
+    $stts = "<small class='badge badge-danger'>NOT OK</small> <span>(" . $missing_count . ")</span>";
+}
 ?>
 	  <tr>
 	  <td style="text-align: center"><?php echo $no;?></td>
@@ -339,6 +415,10 @@ if($rowdb21['QTY_KG']>0){$qtyB=$rowdb21['QTY_KG'];}else{$qtyB=$rowdb21['QTY1_KG'
       <td><?php echo $rowdb21['WHSLOCATIONWAREHOUSEZONECODE']."-".$rowdb21['WAREHOUSELOCATIONCODE']; ?></td>
       <td><?php echo $rowdb24['WAREHOUSELOCATIONCODE']; ?></td>
       <td><?php  echo $rowdb21['CREATIONUSER']; ?></td>
+      <!-- STATUS -->
+      <td style="text-align: center">
+        <?php if (!empty($rowdb24['WAREHOUSELOCATIONCODE'])) { echo $stts; if (!empty($user)) { echo ' <small>('.htmlspecialchars($user, ENT_QUOTES,'UTF-8').')</small>'; } } ?>
+      </td>
       </tr>
 	  				  
 	<?php 
@@ -372,6 +452,7 @@ if($rowdb21['QTY_KG']>0){$qtyB=$rowdb21['QTY_KG'];}else{$qtyB=$rowdb21['QTY1_KG'
 	    <td>&nbsp;</td>
 	    <td>&nbsp;</td>
 	    <td>&nbsp;</td>
+	    <td>&nbsp;</td>
 	    </tr>				
 					</tfoot>
                 </table>
@@ -380,8 +461,9 @@ if($rowdb21['QTY_KG']>0){$qtyB=$rowdb21['QTY_KG'];}else{$qtyB=$rowdb21['QTY1_KG'
             </div> 
 		<div class="card card-primary">
               <div class="card-header">
-                <h3 class="card-title">Detail Laporan Retur Produksi</h3>				 
-          </div>
+                <h3 class="card-title">Detail Laporan Retur Produksi</h3>
+                    <a href="pages/cetak/lapReturUlang_excel.php?awal=<?php echo $Awal;?>&akhir=<?php echo $Akhir;?>" class="btn bg-red float-right" target="_blank">Cetak Excel</a>  	 
+              </div>
               <!-- /.card-header -->
               <div class="card-body">
                 <table id="example17" width="100%" class="table table-sm table-bordered table-striped" style="font-size: 11px; text-align: center;">
@@ -601,7 +683,8 @@ if($rowdb22R1['ORDERPARTNERBRANDCODE']==""){$buyer="";}else{$buyer=$rowdb22R1['O
 		<div class="card card-primary">
               <div class="card-header">
                 <h3 class="card-title">Detail Laporan Retur Untuk Bagi Ulang</h3>				 
-          </div>
+                <a href="pages/cetak/lapBagiUlang_excel.php?awal=<?php echo $Awal;?>&akhir=<?php echo $Akhir;?>" class="btn bg-red float-right" target="_blank">Cetak Excel</a>  
+              </div>
               <!-- /.card-header -->
               <div class="card-body">
                 <table id="example18" width="100%" class="table table-sm table-bordered table-striped" style="font-size: 11px; text-align: center;">
@@ -1297,3 +1380,102 @@ function checkAll(form1){
     }
 }
 </script>
+<?php 
+if($_POST['mutasikain']=="MutasiKain"){
+	
+function mutasiurut(){
+include "koneksi.php";		
+$format = "20".date("ymd");
+$sql=mysqli_query($con,"SELECT no_mutasi FROM tbl_mutasi_kain WHERE substr(no_mutasi,1,8) like '%".$format."%' ORDER BY no_mutasi DESC LIMIT 1 ") or die (mysql_error());
+$d=mysqli_num_rows($sql);
+if($d>0){
+$r=mysqli_fetch_array($sql);
+$d=$r['no_mutasi'];
+$str=substr($d,8,2);
+$Urut = (int)$str;
+}else{
+$Urut = 0;
+}
+$Urut = $Urut + 1;
+$Nol="";
+$nilai=2-strlen($Urut);
+for ($i=1;$i<=$nilai;$i++){
+$Nol= $Nol."0";
+}
+$tidbr =$format.$Nol.$Urut;
+return $tidbr;
+}
+$nomid=mutasiurut();	
+
+$sql1=mysqli_query($con,"SELECT *,count(b.transid) as jmlrol,a.transid as kdtrans FROM tbl_mutasi_kain a 
+LEFT JOIN tbl_prodemand b ON a.transid=b.transid 
+WHERE isnull(a.no_mutasi) AND date_format(a.tgl_buat ,'%Y-%m-%d')='$Awal' AND a.gshift='$Gshift' 
+GROUP BY a.transid");
+$n1=1;
+$noceklist1=1;	
+while($r1=mysqli_fetch_array($sql1)){	
+	if($_POST['cek'][$n1]!='') 
+		{
+		$transid1 = $_POST['cek'][$n1];
+		mysqli_query($con,"UPDATE tbl_mutasi_kain SET
+		no_mutasi='$nomid',
+		tgl_mutasi=now()
+		WHERE transid='$transid1'
+		");
+		}else{
+			$noceklist1++;
+	}
+	$n1++;
+	}
+if($noceklist1==$n1){
+	echo "<script>
+  	$(function() {
+    const Toast = Swal.mixin({
+      toast: false,
+      position: 'middle',
+      showConfirmButton: false,
+      timer: 2000
+    });
+	Toast.fire({
+        icon: 'info',
+        title: 'Data tidak ada yang di Ceklist',
+		
+      })
+  });
+  
+</script>";	
+}else{	
+echo "<script>
+	$(function() {
+    const Toast = Swal.mixin({
+      toast: false,
+      position: 'middle',
+      showConfirmButton: true,
+      timer: 6000
+    });
+	Toast.fire({
+  title: 'Data telah di Mutasi',
+  text: 'klik OK untuk Cetak Bukti Mutasi',
+  icon: 'success',  
+}).then((result) => {
+  if (result.isConfirmed) {
+    	window.open('pages/cetak/cetak_mutasi_ulang.php?mutasi=$nomid', '_blank');
+  }
+})
+  });
+	</script>";
+	
+/*echo "<script>
+	Swal.fire({
+  title: 'Data telah di Mutasi',
+  text: 'klik OK untuk Cetak Bukti Mutasi',
+  icon: 'success',  
+}).then((result) => {
+  if (result.isConfirmed) {
+    	window.location='Mutasi';
+  }
+});
+	</script>";	*/
+}
+}
+?>

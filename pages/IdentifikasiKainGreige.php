@@ -34,8 +34,9 @@ $sqlDB2 = " SELECT
                     OR ITEMTYPEAFICODE = 'KGF'
                   )
                   AND (
-                    PROGRESSSTATUS = '2'
-                    OR PROGRESSSTATUS = '6'
+                    PROGRESSSTATUS = '1'
+                    OR PROGRESSSTATUS = '2'
+					OR PROGRESSSTATUS = '6'
                   )
                 GROUP BY
                   SUBCODE02,
@@ -125,8 +126,9 @@ $sqlDB210 = "SELECT
               AND a.SUBCODE03 = '$subC2'
               AND a.SUBCODE04 = '$subC3'
               AND (
-                a.PROGRESSSTATUS = '2'
-                OR a.PROGRESSSTATUS = '6'
+                a.PROGRESSSTATUS = '1'
+                OR a.PROGRESSSTATUS = '2'
+				OR a.PROGRESSSTATUS = '6'
               )
               AND (
                 NOT a2.VALUESTRING = '3'
@@ -480,7 +482,7 @@ $rowdb210 = db2_fetch_assoc($stmt10);
                   </span></td>
                 <td style="text-align: right"><?php echo $rowdb21['INTERNALREFERENCE']; ?></td>
                 <td style="text-align: right"><?php echo $rowdb21['QTY_ROL']; ?></td>
-                <td style="text-align: right"><?php echo $rowdb21['QTY_KG']; ?></td>
+                <td style="text-align: right"><?php echo number_format($rowdb21['QTY_KG'], 2, ".", ""); ?></td>
                 <td style="text-align: right"><?php echo $rowdb24['WAREHOUSELOCATIONCODE']; ?></td>
                 <td style="text-align: right"><?php if ($rowdb22['ROL'] != "") {
                                                 echo $rowdb22['ROL'];
@@ -488,7 +490,7 @@ $rowdb210 = db2_fetch_assoc($stmt10);
                                                 echo "0";
                                               } ?></td>
                 <td style="text-align: right"><?php if ($rowdb22['BERAT'] != "") {
-                                                echo $rowdb22['BERAT'];
+                                                echo number_format($rowdb22['BERAT'], 2, ".", "");
                                               } else {
                                                 echo "0.00";
                                               } ?></td>
@@ -499,9 +501,11 @@ $rowdb210 = db2_fetch_assoc($stmt10);
             <?php
               $no++;
               $tMRol += $rowdb21['QTY_ROL'];
-              $tMKG += $rowdb21['QTY_KG'];
+//              $tMKG += $rowdb21['QTY_KG'];
+			  $tMKG += number_format($rowdb21['QTY_KG'], 2, ".", "");
               $tKRol += $rowdb22['ROL'];
-              $tKKG += $rowdb22['BERAT'];
+//              $tKKG += $rowdb22['BERAT'];
+			  $tKKG += number_format($rowdb22['BERAT'], 2, ".", "");	
             } ?>
           </tbody>
           <tfoot>

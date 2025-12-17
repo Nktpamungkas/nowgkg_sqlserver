@@ -19,7 +19,8 @@ $sqlDB2 = " SELECT
 	PRODUCTIONDEMAND.SUBCODE06,
 	PRODUCTIONDEMAND.SUBCODE07,
 	PRODUCTIONDEMAND.SUBCODE08,
-	STOCKTRANSACTION.ITEMELEMENTCODE
+	STOCKTRANSACTION.ITEMELEMENTCODE,
+  a.VALUESTRING AS PANJANG_BENANG
 FROM
 	PRODUCTIONDEMAND PRODUCTIONDEMAND
 LEFT OUTER JOIN (
@@ -54,6 +55,8 @@ PRODUCTIONDEMAND.SUBCODE06 = pr.SUBCODE06
 PRODUCTIONDEMAND.SUBCODE07 = pr.SUBCODE07
 	AND
 PRODUCTIONDEMAND.SUBCODE08 = pr.SUBCODE08
+  LEFT JOIN PRODUCTIONDEMAND p ON p.CODE = SUBSTR(STOCKTRANSACTION.ITEMELEMENTCODE, 1, 8)
+  LEFT JOIN ADSTORAGE a ON a.UNIQUEID = p.ABSUNIQUEID AND a.FIELDNAME = 'FALoopLenght'
 WHERE
 	PRODUCTIONDEMAND.CODE = '$demand'
 GROUP BY
@@ -71,7 +74,8 @@ GROUP BY
 	PRODUCTIONDEMAND.SUBCODE06,
 	PRODUCTIONDEMAND.SUBCODE07,
 	PRODUCTIONDEMAND.SUBCODE08,
-	STOCKTRANSACTION.ITEMELEMENTCODE
+	STOCKTRANSACTION.ITEMELEMENTCODE,
+  a.VALUESTRING
 LIMIT 1 ";
 $stmt   = db2_exec($conn1,$sqlDB2, array('cursor'=>DB2_SCROLLABLE));
 $rowdb2 = db2_fetch_assoc($stmt);
@@ -99,8 +103,7 @@ WHERE  PRODUCTIONDEMAND.CODE='".$rowdb2['DEMAND_KGF']."'";
 	  $stmtPrj   = db2_exec($conn1,$sqlPrj, array('cursor'=>DB2_SCROLLABLE));	
       $rowPrj   = db2_fetch_assoc($stmtPrj);
 
-$sqlPrj1="
-SELECT
+$sqlPrj1="SELECT
 	PROJECTCODE,ORDERLINE,ORDERCODE 
 FROM
 	DB2ADMIN.STOCKTRANSACTION
@@ -111,8 +114,7 @@ WHERE
 	  $stmtPrj1   = db2_exec($conn1,$sqlPrj1, array('cursor'=>DB2_SCROLLABLE));	
       $rowPrj1   = db2_fetch_assoc($stmtPrj1);
 
-$sqlPrj2="
-SELECT
+$sqlPrj2="SELECT
 	LISTAGG(TRIM(a.PROJECTCODE),
 	', ') AS PROJECTCODE
 FROM
@@ -158,8 +160,7 @@ GROUP BY
 //WHERE e.ELEMENTCODE LIKE '$rowdb2[DEMAND_KGF]%' LIMIT 1	";
 //	  $stmtLG   = db2_exec($conn1,$sqlLG, array('cursor'=>DB2_SCROLLABLE));	
 //      $rowLG   = db2_fetch_assoc($stmtLG);
-$sqlLG="
-SELECT LISTAGG(TRIM(GSM),
+$sqlLG="SELECT LISTAGG(TRIM(GSM),
     ', ') AS LG1,LISTAGG(TRIM(MESIN_KNT),
     ', ') AS MESIN1 FROM (
 SELECT
@@ -190,8 +191,7 @@ WHERE
 ";
 	  $stmtLG   = db2_exec($conn1,$sqlLG, array('cursor'=>DB2_SCROLLABLE));	
       $rowLG   = db2_fetch_assoc($stmtLG);
-$sqlDBLBNG = " 
-SELECT
+$sqlDBLBNG = " SELECT
     STOCKTRANSACTION.PROJECTCODE,
     STOCKTRANSACTION.ORDERCODE,
     STOCKTRANSACTION.ORDERLINE,
@@ -242,8 +242,7 @@ GROUP BY ad.VALUESTRING
 $stmt5   = db2_exec($conn1,$sqlDB25, array('cursor'=>DB2_SCROLLABLE));					  
 $rowdb25 = db2_fetch_assoc($stmt5);
 
-$sqlDB26 = " 
-SELECT
+$sqlDB26 = " SELECT
     STOCKTRANSACTION.PROJECTCODE,
     STOCKTRANSACTION.ORDERCODE,
     STOCKTRANSACTION.ORDERLINE,
@@ -283,8 +282,7 @@ GROUP BY
 $stmt6   = db2_exec($conn1,$sqlDB26, array('cursor'=>DB2_SCROLLABLE));					  
 $rowdb26 = db2_fetch_assoc($stmt6);
 $itemKGF= trim($rowdb26['DECOSUBCODE01'])."-".trim($rowdb26['DECOSUBCODE02'])."-".trim($rowdb26['DECOSUBCODE03'])."-".trim($rowdb26['DECOSUBCODE04']);
-$sqlDB27 = " 
-SELECT i.WARNA FROM (SELECT
+$sqlDB27 = " SELECT i.WARNA FROM (SELECT
     ITEMTYPECODE,
     SUBCODE01,
     SUBCODE02,
@@ -488,9 +486,9 @@ $rowdb27 = db2_fetch_assoc($stmt7);
           <td width="14%" align="right" valign="top">Mesin KNT</td>
           <td width="1%" align="left" valign="top">:</td>
           <td width="16%" align="left" valign="top"><?php echo $rowLG['MESIN1'];//echo $rowdb25['NO_MESIN']; ?></td>
-          <td width="11%" align="right" valign="top">&nbsp;</td>
-          <td width="1%" align="left" valign="top">&nbsp;</td>
-          <td width="20%" align="left" valign="top">&nbsp;</td>
+          <td width="11%" align="right" valign="top">Panjang Benang</td>
+          <td width="1%" align="left" valign="top">:</td>
+          <td width="20%" align="left" valign="top"><?= $rowdb2['PANJANG_BENANG']; ?></td>
       </tr> 
       <tr>
           <td width="14%" align="left" valign="top">Jenis Kain</td>
@@ -605,7 +603,7 @@ $lakhr=$batas*3-$batas;
               <td width="10%" align="center" style="border-bottom:1px #000000 solid;
             border-top:1px #000000 solid;
             border-left:1px #000000 solid;
-            border-right:1px #000000 solid;">ROLL</td>
+            border-right:1px #000000 solid;">PROJECT KGF</td>
               <td width="14%" align="center" style="border-bottom:1px #000000 solid;
             border-top:1px #000000 solid;
             border-left:1px #000000 solid;
@@ -680,7 +678,19 @@ GROUP BY
 	LIMIT $lawal,$batas";
 	$stmtC1   = db2_exec($conn1,$sqlC1, array('cursor'=>DB2_SCROLLABLE));
 	//}				  
-    while($rowC1 = db2_fetch_assoc($stmtC1)){	?>  
+    while($rowC1 = db2_fetch_assoc($stmtC1)){	
+      $project1 = "SELECT
+	                    PROJECTCODE,ORDERLINE,ORDERCODE 
+                  FROM
+                    DB2ADMIN.STOCKTRANSACTION
+                  WHERE
+                    ITEMELEMENTCODE = '$rowC1[ITEMELEMENTCODE]'
+                    AND LOGICALWAREHOUSECODE = 'M021'
+                  ORDER BY (TRANSACTIONDATE || ' ' || TRANSACTIONTIME) DESC
+                  LIMIT 1";
+      $stmtPrj1 = db2_exec($conn1,$project1, array('cursor'=>DB2_SCROLLABLE));
+      $rowPrj1 = db2_fetch_assoc($stmtPrj1);
+                  ?>  
             <tr>
               <td align="center" style="border-bottom:1px #000000 solid;
             border-top:1px #000000 solid;
@@ -689,7 +699,9 @@ GROUP BY
               <td align="center" style="border-bottom:1px #000000 solid;
             border-top:1px #000000 solid;
             border-left:1px #000000 solid;
-            border-right:1px #000000 solid;"><?php echo substr($rowC1['ITEMELEMENTCODE'],8,3); ?></td>
+            border-right:1px #000000 solid;"><?php 
+                                                      // echo substr($rowC1['ITEMELEMENTCODE'],0,8); 
+                                                      echo $rowPrj1['PROJECTCODE'];?></td>
               <td align="center" style="border-bottom:1px #000000 solid;
             border-top:1px #000000 solid;
             border-left:1px #000000 solid;
@@ -719,7 +731,7 @@ GROUP BY
               <td width="10%" align="center" style="border-bottom:1px #000000 solid;
             border-top:1px #000000 solid;
             border-left:1px #000000 solid;
-            border-right:1px #000000 solid;">ROLL</td>
+            border-right:1px #000000 solid;">PROJECT KGF</td>
               <td width="14%" align="center" style="border-bottom:1px #000000 solid;
             border-top:1px #000000 solid;
             border-left:1px #000000 solid;
@@ -794,7 +806,19 @@ GROUP BY
 	LIMIT $ltgh,$batas";
 	$stmtC2   = db2_exec($conn1,$sqlC2, array('cursor'=>DB2_SCROLLABLE));
 	//}				  
-    while($rowC2 = db2_fetch_assoc($stmtC2)){	?>
+    while($rowC2 = db2_fetch_assoc($stmtC2)){	
+      $project2 = "SELECT
+	                    PROJECTCODE,ORDERLINE,ORDERCODE 
+                  FROM
+                    DB2ADMIN.STOCKTRANSACTION
+                  WHERE
+                    ITEMELEMENTCODE = '$rowC2[ITEMELEMENTCODE]'
+                    AND LOGICALWAREHOUSECODE = 'M021'
+                  ORDER BY (TRANSACTIONDATE || ' ' || TRANSACTIONTIME) DESC
+                  LIMIT 1";
+      $stmtPrj2 = db2_exec($conn1,$project2, array('cursor'=>DB2_SCROLLABLE));
+      $rowPrj2 = db2_fetch_assoc($stmtPrj2);
+      ?>
             <tr>
               <td align="center" style="border-bottom:1px #000000 solid;
             border-top:1px #000000 solid;
@@ -803,7 +827,10 @@ GROUP BY
               <td align="center" style="border-bottom:1px #000000 solid;
             border-top:1px #000000 solid;
             border-left:1px #000000 solid;
-            border-right:1px #000000 solid;"><?php echo substr($rowC2['ITEMELEMENTCODE'],8,3); ?></td>
+            border-right:1px #000000 solid;"><?php 
+                                                //  echo substr($rowC2['ITEMELEMENTCODE'],0,8); 
+                                                echo $rowPrj2['PROJECTCODE'];
+                                                ?></td>
               <td align="center" style="border-bottom:1px #000000 solid;
             border-top:1px #000000 solid;
             border-left:1px #000000 solid;
@@ -833,7 +860,7 @@ GROUP BY
               <td width="10%" align="center" style="border-bottom:1px #000000 solid;
             border-top:1px #000000 solid;
             border-left:1px #000000 solid;
-            border-right:1px #000000 solid;">ROLL</td>
+            border-right:1px #000000 solid;">PROJECT KGF</td>
               <td width="14%" align="center" style="border-bottom:1px #000000 solid;
             border-top:1px #000000 solid;
             border-left:1px #000000 solid;
@@ -908,7 +935,18 @@ GROUP BY
 	LIMIT $lakhr,$batas";
 	$stmtC3   = db2_exec($conn1,$sqlC3, array('cursor'=>DB2_SCROLLABLE));
 	//}				  
-    while($rowC3 = db2_fetch_assoc($stmtC3)){	?>
+    while($rowC3 = db2_fetch_assoc($stmtC3)){	
+      $project3 = "SELECT
+	                    PROJECTCODE,ORDERLINE,ORDERCODE 
+                  FROM
+                    DB2ADMIN.STOCKTRANSACTION
+                  WHERE
+                    ITEMELEMENTCODE = '$rowC3[ITEMELEMENTCODE]'
+                    AND LOGICALWAREHOUSECODE = 'M021'
+                  ORDER BY (TRANSACTIONDATE || ' ' || TRANSACTIONTIME) DESC
+                  LIMIT 1";
+      $stmtPrj3 = db2_exec($conn1,$project3, array('cursor'=>DB2_SCROLLABLE));
+      $rowPrj3 = db2_fetch_assoc($stmtPrj3);?>
             <tr>
               <td align="center" style="border-bottom:1px #000000 solid;
             border-top:1px #000000 solid;
@@ -917,7 +955,10 @@ GROUP BY
               <td align="center" style="border-bottom:1px #000000 solid;
             border-top:1px #000000 solid;
             border-left:1px #000000 solid;
-            border-right:1px #000000 solid;"><?php echo substr($rowC3['ITEMELEMENTCODE'],8,3); ?></td>
+            border-right:1px #000000 solid;"><?php 
+                                                      // echo substr($rowC3['ITEMELEMENTCODE'],0,8); 
+                                                      echo $rowPrj3['PROJECTCODE'];
+                                                      ?></td>
               <td align="center" style="border-bottom:1px #000000 solid;
             border-top:1px #000000 solid;
             border-left:1px #000000 solid;

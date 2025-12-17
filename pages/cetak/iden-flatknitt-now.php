@@ -72,7 +72,7 @@ $rowmc = db2_fetch_assoc($stmt1);
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <link href="styles_cetak.css" rel="stylesheet" type="text/css">
+  <link href="styles_cetak_gkg.css" rel="stylesheet" type="text/css">
   <title>Cetak Identifikasi Flat Knitt</title>
   <script>
 

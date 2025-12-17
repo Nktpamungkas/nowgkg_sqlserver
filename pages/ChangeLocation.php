@@ -53,6 +53,33 @@ $Awal = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
     <div class="card card-warning">
         <div class="card-header">
             <h3 class="card-title">Data Change Location GKG</h3>
+            <?php if($Awal!="") {
+                $Awal1 = date('Y-m-d', strtotime($Awal . ' +1 day'));
+                $tanggal_waktu1 = $Awal . " " . "07:00:00";
+                $tanggal_waktu2 = $Awal1 . " " . "07:00:00";
+            }
+            if($Awal!=""):
+            ?>
+            <div class="btn-group float-right">
+                <button type="button" class="btn bg-blue dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Cetak Excel
+                </button>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item" href="pages/cetak/laplocation_excel.php?awal=<?php echo $tanggal_waktu1;?>&akhir=<?php echo $tanggal_waktu2;?>&shift=" target="_blank">
+                    Shift All
+                    </a>
+                    <a class="dropdown-item" href="pages/cetak/laplocation_excel.php?awal=<?php echo $tanggal_waktu1;?>&akhir=<?php echo $tanggal_waktu2;?>&shift=Shift 1" target="_blank">
+                    Shift 1
+                    </a>
+                    <a class="dropdown-item" href="pages/cetak/laplocation_excel.php?awal=<?php echo $tanggal_waktu1;?>&akhir=<?php echo $tanggal_waktu2;?>&shift=Shift 2" target="_blank">
+                    Shift 2
+                    </a>
+                    <a class="dropdown-item" href="pages/cetak/laplocation_excel.php?awal=<?php echo $tanggal_waktu1;?>&akhir=<?php echo $tanggal_waktu2;?>&shift=Shift 3" target="_blank">
+                    Shift 3
+                    </a>
+                </div>
+                </div>
+            <?php endif; ?>
         </div>
         <!-- /.card-header -->
         <div class="card-body">
@@ -90,7 +117,7 @@ $Awal = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
                                         WHERE
                                             ITEMTYPECODE = 'KGF'
                                             AND LOGICALWAREHOUSECODE = 'M021'
-                                            AND (TRIM(TRANSACTIONDATE) || ' ' || TRIM(TRANSACTIONTIME) BETWEEN '$tanggal_waktu1' AND '$tanggal_waktu2') 
+                                            AND (TIMESTAMP(TRANSACTIONDATE, TRANSACTIONTIME) BETWEEN TIMESTAMP('$tanggal_waktu1') AND TIMESTAMP('$tanggal_waktu2')) 
                                             $WhereUser";
                             $stmt = db2_exec($conn1, $queryDB2, array('cursor' => DB2_SCROLLABLE));
                             $totalQuality = 0;
@@ -135,17 +162,17 @@ $Awal = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
                                                 s.TEMPLATECODE = '301'
                                                 AND s.ITEMTYPECODE = 'KGF'
                                                 AND s.LOGICALWAREHOUSECODE = 'M021'
-                                                AND (TRIM(s.TRANSACTIONDATE) || ' ' || TRIM(s.TRANSACTIONTIME) BETWEEN '$tanggal_waktu1' AND '$tanggal_waktu2')
+                                                AND (TIMESTAMP(s.TRANSACTIONDATE, s.TRANSACTIONTIME) BETWEEN TIMESTAMP('$tanggal_waktu1') AND TIMESTAMP('$tanggal_waktu2'))
                                                 AND s.ITEMELEMENTCODE = '$rowdb2[ITEMELEMENTCODE]' $WhereProject
                                             ORDER BY
-                                                s.TRANSACTIONDATE DESC
+                                                s.TRANSACTIONDATE DESC, s.TRANSACTIONTIME DESC
                                             LIMIT 1) AS SEBELUM ON
                                             SEBELUM.TRANSACTIONNUMBER = S.TRANSACTIONNUMBER
                                         WHERE
                                             s.TEMPLATECODE = '302'
                                             AND s.ITEMTYPECODE = 'KGF'
                                             AND s.LOGICALWAREHOUSECODE = 'M021'
-                                            AND (TRIM(s.TRANSACTIONDATE) || ' ' || TRIM(s.TRANSACTIONTIME) BETWEEN '$tanggal_waktu1' AND '$tanggal_waktu2')
+                                            AND (TIMESTAMP(s.TRANSACTIONDATE, s.TRANSACTIONTIME) BETWEEN TIMESTAMP('$tanggal_waktu1') AND TIMESTAMP('$tanggal_waktu2'))
                                             AND s.ITEMELEMENTCODE = '$rowdb2[ITEMELEMENTCODE]' $WhereProject
                                         LIMIT 1";
                                 $stmt1 = db2_exec($conn1, $queryDB21, array('cursor' => DB2_SCROLLABLE));

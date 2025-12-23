@@ -308,16 +308,16 @@ $rowdb210 = db2_fetch_assoc($stmt10);
               $stmt2   = db2_exec($conn1, $sqlDB22, array('cursor' => DB2_SCROLLABLE));
               $rowdb22 = db2_fetch_assoc($stmt2);
 
-              $sqlDB23 = "  SELECT
-                              x.*
-                            FROM
-                              DB2ADMIN.ITXVIEWHEADERKNTORDER x
-                            WHERE
-                              PROJECTCODE = '$Project'
-                              AND ITEMTYPEAFICODE = 'KGF'
-                              AND PRODUCTIONORDERCODE = '$rowdb21[EXTERNALREFERENCE]'";
-              $stmt3   = db2_exec($conn1, $sqlDB23, array('cursor' => DB2_SCROLLABLE));
-              $rowdb23 = db2_fetch_assoc($stmt3);
+//              $sqlDB23 = "  SELECT
+//                              x.*
+//                            FROM
+//                              DB2ADMIN.ITXVIEWHEADERKNTORDER x
+//                            WHERE
+//                              PROJECTCODE = '$Project'
+//                              AND ITEMTYPEAFICODE = 'KGF'
+//                              AND PRODUCTIONORDERCODE = '$rowdb21[EXTERNALREFERENCE]'";
+//              $stmt3   = db2_exec($conn1, $sqlDB23, array('cursor' => DB2_SCROLLABLE));
+//              $rowdb23 = db2_fetch_assoc($stmt3);
               $sqlDB24 = "SELECT
                             LISTAGG (
                               DISTINCT TRIM(BLKOKASI.WAREHOUSELOCATIONCODE),
@@ -372,53 +372,53 @@ $rowdb210 = db2_fetch_assoc($stmt10);
               $stmt5   = db2_exec($conn1, $sqlDB25, array('cursor' => DB2_SCROLLABLE));
               $rowdb25 = db2_fetch_assoc($stmt5);
 
-             $sqlDB26 = "SELECT
-                            QUALITYDOCLINE.VALUEQUANTITY AS LEBAR1,
-                            GSM.VALUEQUANTITY AS GSM1
-                          FROM
-                            QUALITYDOCLINE
-                            LEFT OUTER JOIN (
-                              SELECT
-                                QUALITYDOCPRODUCTIONORDERCODE,
-                                VALUEQUANTITY
-                              FROM
-                                QUALITYDOCLINE
-                              WHERE
-                                QUALITYDOCUMENTHEADERNUMBERID = '35'
-                                AND QUALITYDOCLINE.CHARACTERISTICCODE = 'GSM'
-                                AND QUALITYDOCUMENTITEMTYPEAFICODE = 'KGF'
-                            ) GSM ON GSM.QUALITYDOCPRODUCTIONORDERCODE = QUALITYDOCLINE.QUALITYDOCPRODUCTIONORDERCODE
-                          WHERE
-                            QUALITYDOCUMENTHEADERNUMBERID = '35'
-                            AND QUALITYDOCLINE.CHARACTERISTICCODE = 'LEBAR1'
-                            AND QUALITYDOCUMENTITEMTYPEAFICODE = 'KGF'
-                            AND QUALITYDOCLINE.QUALITYDOCPRODUCTIONORDERCODE = '$rowdb21[EXTERNALREFERENCE]' ";
-              $stmt6   = db2_exec($conn1, $sqlDB26, array('cursor' => DB2_SCROLLABLE));
-              $rowdb26 = db2_fetch_assoc($stmt6);
-
-              $sqlDB27 = "SELECT
-                            QUALITYDOCLINE.VALUEQUANTITY AS LEBAR1,
-                            GSM.VALUEQUANTITY AS GSM1
-                          FROM
-                            QUALITYDOCLINE
-                            LEFT OUTER JOIN (
-                              SELECT
-                                QUALITYDOCPRODUCTIONORDERCODE,
-                                VALUEQUANTITY
-                              FROM
-                                QUALITYDOCLINE
-                              WHERE
-                                QUALITYDOCUMENTHEADERNUMBERID = '1379'
-                                AND QUALITYDOCLINE.CHARACTERISTICCODE = 'GSM'
-                                AND QUALITYDOCUMENTITEMTYPEAFICODE = 'KGF'
-                            ) GSM ON GSM.QUALITYDOCPRODUCTIONORDERCODE = QUALITYDOCLINE.QUALITYDOCPRODUCTIONORDERCODE
-                          WHERE
-                            QUALITYDOCUMENTHEADERNUMBERID = '1379'
-                            AND QUALITYDOCLINE.CHARACTERISTICCODE = 'LEBAR1'
-                            AND QUALITYDOCUMENTITEMTYPEAFICODE = 'KGF'
-                            AND QUALITYDOCLINE.QUALITYDOCPRODUCTIONORDERCODE = '$rowdb21[EXTERNALREFERENCE]'";
-              $stmt7   = db2_exec($conn1, $sqlDB27, array('cursor' => DB2_SCROLLABLE));
-              $rowdb27 = db2_fetch_assoc($stmt7);
+//             $sqlDB26 = "SELECT
+//                            QUALITYDOCLINE.VALUEQUANTITY AS LEBAR1,
+//                            GSM.VALUEQUANTITY AS GSM1
+//                          FROM
+//                            QUALITYDOCLINE
+//                            LEFT OUTER JOIN (
+//                              SELECT
+//                                QUALITYDOCPRODUCTIONORDERCODE,
+//                                VALUEQUANTITY
+//                              FROM
+//                                QUALITYDOCLINE
+//                              WHERE
+//                                QUALITYDOCUMENTHEADERNUMBERID = '35'
+//                                AND QUALITYDOCLINE.CHARACTERISTICCODE = 'GSM'
+//                                AND QUALITYDOCUMENTITEMTYPEAFICODE = 'KGF'
+//                            ) GSM ON GSM.QUALITYDOCPRODUCTIONORDERCODE = QUALITYDOCLINE.QUALITYDOCPRODUCTIONORDERCODE
+//                          WHERE
+//                            QUALITYDOCUMENTHEADERNUMBERID = '35'
+//                            AND QUALITYDOCLINE.CHARACTERISTICCODE = 'LEBAR1'
+//                            AND QUALITYDOCUMENTITEMTYPEAFICODE = 'KGF'
+//                            AND QUALITYDOCLINE.QUALITYDOCPRODUCTIONORDERCODE = '$rowdb21[EXTERNALREFERENCE]' ";
+//              $stmt6   = db2_exec($conn1, $sqlDB26, array('cursor' => DB2_SCROLLABLE));
+//              $rowdb26 = db2_fetch_assoc($stmt6);
+//
+//              $sqlDB27 = "SELECT
+//                            QUALITYDOCLINE.VALUEQUANTITY AS LEBAR1,
+//                            GSM.VALUEQUANTITY AS GSM1
+//                          FROM
+//                            QUALITYDOCLINE
+//                            LEFT OUTER JOIN (
+//                              SELECT
+//                                QUALITYDOCPRODUCTIONORDERCODE,
+//                                VALUEQUANTITY
+//                              FROM
+//                                QUALITYDOCLINE
+//                              WHERE
+//                                QUALITYDOCUMENTHEADERNUMBERID = '1379'
+//                                AND QUALITYDOCLINE.CHARACTERISTICCODE = 'GSM'
+//                                AND QUALITYDOCUMENTITEMTYPEAFICODE = 'KGF'
+//                            ) GSM ON GSM.QUALITYDOCPRODUCTIONORDERCODE = QUALITYDOCLINE.QUALITYDOCPRODUCTIONORDERCODE
+//                          WHERE
+//                            QUALITYDOCUMENTHEADERNUMBERID = '1379'
+//                            AND QUALITYDOCLINE.CHARACTERISTICCODE = 'LEBAR1'
+//                            AND QUALITYDOCUMENTITEMTYPEAFICODE = 'KGF'
+//                            AND QUALITYDOCLINE.QUALITYDOCPRODUCTIONORDERCODE = '$rowdb21[EXTERNALREFERENCE]'";
+//              $stmt7   = db2_exec($conn1, $sqlDB27, array('cursor' => DB2_SCROLLABLE));
+//              $rowdb27 = db2_fetch_assoc($stmt7);
               $sqlDB30 = "SELECT
                           e.WIDTHGROSS AS LEBAR1,
                           a.VALUEDECIMAL AS GSM1,

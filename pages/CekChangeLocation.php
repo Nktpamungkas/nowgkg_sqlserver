@@ -112,7 +112,9 @@ $NoLine  = isset($_POST['lineno']) ? $_POST['lineno'] : '';
                           STOCKTRANSACTION.WHSLOCATIONWAREHOUSEZONECODE,
                           STOCKTRANSACTION.WAREHOUSELOCATIONCODE,
                           FULLITEMKEYDECODER.SUMMARIZEDDESCRIPTION";
-            $stmt1   = db2_exec($conn1, $sqlDB21, array('cursor' => DB2_SCROLLABLE));
+//            $stmt1   = db2_exec($conn1, $sqlDB21, array('cursor' => DB2_SCROLLABLE));
+            $stmt1   = db2_prepare($conn1, $sqlDB21);
+			db2_execute($stmt1);  
             //}		
             $knitt = "";
             while ($rowdb21 = db2_fetch_assoc($stmt1)) {
@@ -133,7 +135,9 @@ $NoLine  = isset($_POST['lineno']) ? $_POST['lineno'] : '';
                             AND STOCKTRANSACTION.TOKENCODE = 'RECEIPT'
                             AND STOCKTRANSACTION.TEMPLATECODE = '204'
                             AND STOCKTRANSACTION.ITEMELEMENTCODE = '$rowdb21[ITEMELEMENTCODE]'";
-              $stmt2   = db2_exec($conn1, $sqlDB22, array('cursor' => DB2_SCROLLABLE));
+//              $stmt2   = db2_exec($conn1, $sqlDB22, array('cursor' => DB2_SCROLLABLE));
+              $stmt2   = db2_prepare($conn1, $sqlDB22);
+			  db2_execute($stmt2);	
               $rD = db2_fetch_assoc($stmt2);
               $awal_akhir = "SELECT
                         TEMPLATECODE,
@@ -147,8 +151,9 @@ $NoLine  = isset($_POST['lineno']) ? $_POST['lineno'] : '';
                       ORDER BY
                         STOCKTRANSACTION.TRANSACTIONDATE DESC
                       FETCH FIRST 2 ROWS ONLY";
-              $exce = db2_exec($conn1, $awal_akhir, array('cursor' => DB2_SCROLLABLE));
-
+//              $exce = db2_exec($conn1, $awal_akhir, array('cursor' => DB2_SCROLLABLE));
+              $exce = db2_prepare($conn1, $awal_akhir);
+			  db2_execute($exce);	
               $awal = "";
               $akhi = "";
 
@@ -165,7 +170,9 @@ $NoLine  = isset($_POST['lineno']) ? $_POST['lineno'] : '';
                           FROM DB2ADMIN.BALANCE BALANCE  
                           WHERE BALANCE.LOGICALWAREHOUSECODE='M021' AND 
                           BALANCE.ELEMENTSCODE='$rowdb21[ITEMELEMENTCODE]'";
-              $stmt3   = db2_exec($conn1, $sqlDB23, array('cursor' => DB2_SCROLLABLE));
+//              $stmt3   = db2_exec($conn1, $sqlDB23, array('cursor' => DB2_SCROLLABLE));
+              $stmt3   = db2_prepare($conn1, $sqlDB23);
+			  db2_execute($stmt3);	
               $rD1 = db2_fetch_assoc($stmt3);
               $sqlDB24 = "SELECT
                             SUM(BASEPRIMARYQUANTITYUNIT) AS BASEPRIMARYQUANTITYUNIT,
@@ -181,7 +188,9 @@ $NoLine  = isset($_POST['lineno']) ? $_POST['lineno'] : '';
                           GROUP BY
                             WHSLOCATIONWAREHOUSEZONECODE,
                             WAREHOUSELOCATIONCODE";
-              $stmt4   = db2_exec($conn1, $sqlDB24, array('cursor' => DB2_SCROLLABLE));
+//              $stmt4   = db2_exec($conn1, $sqlDB24, array('cursor' => DB2_SCROLLABLE));
+              $stmt4   = db2_prepare($conn1, $sqlDB24);
+			  db2_execute($stmt4);	
               $rD2 = db2_fetch_assoc($stmt4);
              
                 $stts = "";

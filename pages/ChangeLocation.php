@@ -119,7 +119,9 @@ $Awal = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
                                             AND LOGICALWAREHOUSECODE = 'M021'
                                             AND (TIMESTAMP(TRANSACTIONDATE, TRANSACTIONTIME) BETWEEN TIMESTAMP('$tanggal_waktu1') AND TIMESTAMP('$tanggal_waktu2')) 
                                             $WhereUser";
-                            $stmt = db2_exec($conn1, $queryDB2, array('cursor' => DB2_SCROLLABLE));
+//                            $stmt = db2_exec($conn1, $queryDB2, array('cursor' => DB2_SCROLLABLE));
+                            $stmt = db2_prepare($conn1, $queryDB2);
+							db2_execute($stmt);
                             $totalQuality = 0;
                             $totalBasePrimaryQuantity = 0;
                             while ($rowdb2 = db2_fetch_assoc($stmt)) {
@@ -175,7 +177,9 @@ $Awal = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
                                             AND (TIMESTAMP(s.TRANSACTIONDATE, s.TRANSACTIONTIME) BETWEEN TIMESTAMP('$tanggal_waktu1') AND TIMESTAMP('$tanggal_waktu2'))
                                             AND s.ITEMELEMENTCODE = '$rowdb2[ITEMELEMENTCODE]' $WhereProject
                                         LIMIT 1";
-                                $stmt1 = db2_exec($conn1, $queryDB21, array('cursor' => DB2_SCROLLABLE));
+//                                $stmt1 = db2_exec($conn1, $queryDB21, array('cursor' => DB2_SCROLLABLE));
+                                $stmt1 = db2_prepare($conn1, $queryDB21);
+								db2_execute($stmt1);
                                 $rowdb21 = db2_fetch_assoc($stmt1);
 
                                 if ($rowdb21 != NULL) {

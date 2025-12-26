@@ -52,7 +52,9 @@ $sqlDB2 = " SELECT
               ) X
             WHERE
               X.PROJECT = '$Project'";
-$stmt   = db2_exec($conn1, $sqlDB2, array('cursor' => DB2_SCROLLABLE));
+//$stmt   = db2_exec($conn1, $sqlDB2, array('cursor' => DB2_SCROLLABLE));
+$stmt   = db2_prepare($conn1, $sqlDB2);
+db2_execute($stmt);
 $sqlDB210 = "SELECT
               SUM(a.BASEPRIMARYQUANTITY) AS BASEPRIMARYQUANTITY,
               SUM(a3.VALUEDECIMAL) AS QTYSALIN
@@ -134,7 +136,9 @@ $sqlDB210 = "SELECT
                 NOT a2.VALUESTRING = '3'
                 OR a2.VALUESTRING IS NULL
               ) ";
-$stmt10   = db2_exec($conn1, $sqlDB210, array('cursor' => DB2_SCROLLABLE));
+//$stmt10   = db2_exec($conn1, $sqlDB210, array('cursor' => DB2_SCROLLABLE));
+$stmt10   = db2_prepare($conn1, $sqlDB210);
+db2_execute($stmt10);
 $rowdb210 = db2_fetch_assoc($stmt10);
 ?>
 <!-- Main content -->
@@ -284,7 +288,9 @@ $rowdb210 = db2_fetch_assoc($stmt10);
                           STOCKTRANSACTION.TRANSACTIONDATE
                         ORDER BY
                           STOCKTRANSACTION.TRANSACTIONDATE ASC";
-            $stmt1   = db2_exec($conn1, $sqlDB21, array('cursor' => DB2_SCROLLABLE));
+//            $stmt1   = db2_exec($conn1, $sqlDB21, array('cursor' => DB2_SCROLLABLE));
+            $stmt1   = db2_prepare($conn1, $sqlDB21);
+			  db2_execute($stmt1);
             //}				  
             while ($rowdb21 = db2_fetch_assoc($stmt1)) {
               $bon = trim($rowdb21['PROVISIONALCODE']) . "-" . trim($rowdb21['ORDERLINE']);
@@ -305,7 +311,9 @@ $rowdb210 = db2_fetch_assoc($stmt10);
                             AND STOCKTRANSACTION.ORDERLINE = '$rowdb21[ORDERLINE]'
                           GROUP BY
                             BALANCE.LOTCODE ";
-              $stmt2   = db2_exec($conn1, $sqlDB22, array('cursor' => DB2_SCROLLABLE));
+//              $stmt2   = db2_exec($conn1, $sqlDB22, array('cursor' => DB2_SCROLLABLE));
+              $stmt2   = db2_prepare($conn1, $sqlDB22);
+				db2_execute($stmt2);
               $rowdb22 = db2_fetch_assoc($stmt2);
 
 //              $sqlDB23 = "  SELECT
@@ -356,7 +364,9 @@ $rowdb210 = db2_fetch_assoc($stmt10);
                                 AND STOCKTRANSACTION.LOGICALWAREHOUSECODE = 'M021'
                                 AND NOT ITXVIEWLAPMASUKGREIGE.ORDERLINE IS NULL
                             ) AS BLKOKASI";
-              $stmt4   = db2_exec($conn1, $sqlDB24, array('cursor' => DB2_SCROLLABLE));
+//              $stmt4   = db2_exec($conn1, $sqlDB24, array('cursor' => DB2_SCROLLABLE));
+              $stmt4   = db2_prepare($conn1, $sqlDB24);
+				db2_execute($stmt4);
               $rowdb24 = db2_fetch_assoc($stmt4);
               $sqlDB25 = "SELECT
                             ad.VALUESTRING AS NO_MESIN
@@ -369,7 +379,9 @@ $rowdb210 = db2_fetch_assoc($stmt10);
                           GROUP BY
                             ad.VALUESTRING
                           ";
-              $stmt5   = db2_exec($conn1, $sqlDB25, array('cursor' => DB2_SCROLLABLE));
+//              $stmt5   = db2_exec($conn1, $sqlDB25, array('cursor' => DB2_SCROLLABLE));
+              $stmt5   = db2_prepare($conn1, $sqlDB25);
+				db2_execute($stmt5);
               $rowdb25 = db2_fetch_assoc($stmt5);
 
 //             $sqlDB26 = "SELECT
@@ -438,7 +450,9 @@ $rowdb210 = db2_fetch_assoc($stmt10);
                           e.WIDTHGROSS,
                           a.VALUEDECIMAL
                         ";
-              $stmt10   = db2_exec($conn1, $sqlDB30, array('cursor' => DB2_SCROLLABLE));
+//              $stmt10   = db2_exec($conn1, $sqlDB30, array('cursor' => DB2_SCROLLABLE));
+              $stmt10   = db2_prepare($conn1, $sqlDB30);
+				db2_execute($stmt10);
               $rowdb30 = db2_fetch_assoc($stmt10);
 
             ?>
@@ -670,7 +684,9 @@ GROUP BY
 s.TRANSACTIONDATE, s.DECOSUBCODE02,
 s.DECOSUBCODE03, s.DECOSUBCODE04,
 s.LOTCODE ";*/
-                $stmt1R   = db2_exec($conn1, $sqlDB21R, array('cursor' => DB2_SCROLLABLE));
+//                $stmt1R   = db2_exec($conn1, $sqlDB21R, array('cursor' => DB2_SCROLLABLE));
+                $stmt1R   = db2_prepare($conn1, $sqlDB21R);
+				  db2_execute($stmt1R);
                 //}				  
                 while ($rowdb21R = db2_fetch_assoc($stmt1R)) {
                   $itemcR = trim($rowdb21R['DECOSUBCODE02']) . "" . trim($rowdb21R['DECOSUBCODE03']) . " " . trim($rowdb21R['DECOSUBCODE04']);
@@ -726,7 +742,9 @@ s.ITEMELEMENTCODE
                         BALANCE.LOTCODE,
                         STOCKTRANSACTION.TRANSACTIONNUMBER";
 
-                  $stmt2R   = db2_exec($conn1, $sqlDB22R, array('cursor' => DB2_SCROLLABLE));
+//                  $stmt2R   = db2_exec($conn1, $sqlDB22R, array('cursor' => DB2_SCROLLABLE));
+                  $stmt2R   = db2_prepare($conn1, $sqlDB22R);
+					db2_execute($stmt2R);
                   $rowdb22R = db2_fetch_assoc($stmt2R);
                   $sqlDB26R = " SELECT
                                   QUALITYDOCLINE.VALUEQUANTITY AS LEBAR1,
@@ -749,7 +767,9 @@ s.ITEMELEMENTCODE
                                   AND QUALITYDOCLINE.CHARACTERISTICCODE = 'LEBAR1'
                                   AND QUALITYDOCUMENTITEMTYPEAFICODE = 'KGF'
                                   AND QUALITYDOCLINE.QUALITYDOCPRODUCTIONORDERCODE = '$rowdb21R[LOTCODE]'";
-                  $stmt6R   = db2_exec($conn1, $sqlDB26R, array('cursor' => DB2_SCROLLABLE));
+//                  $stmt6R   = db2_exec($conn1, $sqlDB26R, array('cursor' => DB2_SCROLLABLE));
+                  $stmt6R   = db2_prepare($conn1, $sqlDB26R);
+					db2_execute($stmt6R);
                   $rowdb26R = db2_fetch_assoc($stmt6R);
 
                   $sqlDB27R = " SELECT
@@ -773,7 +793,9 @@ s.ITEMELEMENTCODE
                                   AND QUALITYDOCLINE.CHARACTERISTICCODE = 'LEBAR1'
                                   AND QUALITYDOCUMENTITEMTYPEAFICODE = 'KGF'
                                   AND QUALITYDOCLINE.QUALITYDOCPRODUCTIONORDERCODE = '$rowdb21R[LOTCODE]'";
-                  $stmt7R   = db2_exec($conn1, $sqlDB27R, array('cursor' => DB2_SCROLLABLE));
+//                  $stmt7R   = db2_exec($conn1, $sqlDB27R, array('cursor' => DB2_SCROLLABLE));
+                  $stmt7R   = db2_prepare($conn1, $sqlDB27R);
+					db2_execute($stmt7R);
                   $rowdb27R = db2_fetch_assoc($stmt7R);
 
                   if ($rowdb21R['KET'] == "1") {
@@ -916,7 +938,9 @@ s.ITEMELEMENTCODE
                             GROUP BY STKKELUAR.ITEMELEMENTCODE,STKKELUAR.TRANSACTIONNUMBER) AS STOCKOUT
                             GROUP BY STOCKOUT.TRANSACTIONNUMBER,
                             STOCKOUT.ITEMELEMENTCODE";
-                $stmt3   = db2_exec($conn1, $sqlDB23, array('cursor' => DB2_SCROLLABLE));
+//                $stmt3   = db2_exec($conn1, $sqlDB23, array('cursor' => DB2_SCROLLABLE));
+                $stmt3   = db2_prepare($conn1, $sqlDB23);
+				  db2_execute($stmt3);
                 while ($rowdb23 = db2_fetch_assoc($stmt3)) {
                   $sqlDB24 = "SELECT
                                 x.ITEMELEMENTCODE,
@@ -933,7 +957,9 @@ s.ITEMELEMENTCODE
                               WHERE
                                 x.CUTORGTRTRANSACTIONNUMBER = '$rowdb23[TRANSACTIONNUMBER]'
                               ";
-                  $stmt4   = db2_exec($conn1, $sqlDB24, array('cursor' => DB2_SCROLLABLE));
+//                  $stmt4   = db2_exec($conn1, $sqlDB24, array('cursor' => DB2_SCROLLABLE));
+                  $stmt4   = db2_prepare($conn1, $sqlDB24);
+					db2_execute($stmt4);
                   $rowdb24 = db2_fetch_assoc($stmt4);
                   if ($rowdb24['ELEMENTSCODE'] != "") {
                     $sts24 = "<small class='badge badge-success'>Ada</small>";
@@ -962,7 +988,9 @@ s.ITEMELEMENTCODE
                                     x.ITEMELEMENTCODE = '$rowdb23[ITEMELEMENTCODE]'
                                     AND X.TEMPLATECODE = '342'
                                   ";
-                  $stmt5   = db2_exec($conn1, $sqlDB25, array('cursor' => DB2_SCROLLABLE));
+//                  $stmt5   = db2_exec($conn1, $sqlDB25, array('cursor' => DB2_SCROLLABLE));
+                  $stmt5   = db2_prepare($conn1, $sqlDB25);
+					db2_execute($stmt5);
                   $rowdb25 = db2_fetch_assoc($stmt5);
                   if ($rowdb25['ELEMENTSCODE'] != "") {
                     $sts25 = "<small class='badge badge-success'>Ada</small>";

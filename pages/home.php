@@ -80,12 +80,16 @@
 				LEFT JOIN BALANCE b ON s1.ITEMELEMENTCODE = b.ELEMENTSCODE AND b.ITEMTYPECODE ='KGF' AND b.LOGICALWAREHOUSECODE = 'M021'
 				WHERE
 					a.VALUESTRING > '0' AND b.ELEMENTSCODE IS NOT NULL";
-              $stmt2   = db2_exec($conn1, $sqlDB22, array('cursor' => DB2_SCROLLABLE));
+//              $stmt2   = db2_exec($conn1, $sqlDB22, array('cursor' => DB2_SCROLLABLE));
+			  $stmt2 = db2_prepare($conn1, $sqlDB22);
+    		  db2_execute($stmt2);
               $rowdb22 = db2_fetch_assoc($stmt2);
 		$sqlDB21 = "SELECT 
 					sum(BASEPRIMARYQUANTITYUNIT) AS KG_STOCK 
 					FROM BALANCE WHERE ITEMTYPECODE ='KGF' AND LOGICALWAREHOUSECODE ='M021' ";
-					  $stmt1   = db2_exec($conn1, $sqlDB21, array('cursor' => DB2_SCROLLABLE));
+//					  $stmt1   = db2_exec($conn1, $sqlDB21, array('cursor' => DB2_SCROLLABLE));
+					  $stmt1   = db2_prepare($conn1, $sqlDB21);
+					  db2_execute($stmt1);
 					  $rowdb21 = db2_fetch_assoc($stmt1);
 ?>
 <!-- Main content -->
@@ -308,7 +312,9 @@
 				--			HAVING 
 				--			SUM(b.BASEPRIMARYQUANTITYUNIT) > 5000
 				";  
-                $stmt3   = db2_exec($conn1, $sqlDB23, array('cursor' => DB2_SCROLLABLE));
+//                $stmt3   = db2_exec($conn1, $sqlDB23, array('cursor' => DB2_SCROLLABLE));
+                $stmt3   = db2_prepare($conn1, $sqlDB23);
+				db2_execute($stmt3);
                 while ($rowdb23 = db2_fetch_assoc($stmt3)) {                  
                   if ($rowdb23['VALUESTRING'] == "1") {
                     $sts24 = "<small class='badge badge-danger'>Stok Mati</small>";
@@ -372,8 +378,9 @@
         GROUP BY TRIM(b.WAREHOUSELOCATIONCODE)
         ORDER BY location
       ";
-      $stmt = db2_exec($conn1, $sql, ['cursor'=>DB2_SCROLLABLE]);
-
+//      $stmt = db2_exec($conn1, $sql, ['cursor'=>DB2_SCROLLABLE]);
+      $stmt = db2_prepare($conn1, $sql);
+	  db2_execute($stmt);	  
       $groups = []; // ['A' => [ ['loc'=>'A01', 'roll'=>.., 'weight'=>..], ... ], 'B'=>...]
       while ($r = db2_fetch_assoc($stmt)) {
         $loc = trim($r['LOCATION'] ?? '');

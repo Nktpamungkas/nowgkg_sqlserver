@@ -1,12 +1,22 @@
 <?php
 $Awal  = isset($_POST['tgl_awal']) ? $_POST['tgl_awal'] : '';
 $Akhir  = isset($_POST['tgl_akhir']) ? $_POST['tgl_akhir'] : '';
+$cacheSalesOrder = array();
+$cacheProdDesc = array();
+$cacheQuality35 = array();
+$cacheQuality1379 = array();
+$cacheMachineNo = array();
+$cacheWidthKFF = array();
+$cacheGsmKFF = array();
+$cacheWidthFKF = array();
+$cacheGsmFKF = array();
 
-function db2_prepare_execute($conn, $sql, $options = array('cursor' => DB2_SCROLLABLE))
+function cacheResult($key, array &$store, callable $resolver)
 {
-  $stmt = db2_prepare($conn, $sql, $options);
-  db2_execute($stmt);
-  return $stmt;
+  if (!array_key_exists($key, $store)) {
+    $store[$key] = $resolver();
+  }
+  return $store[$key];
 }
 ?>
 <!-- Main content -->
@@ -109,100 +119,109 @@ function db2_prepare_execute($conn, $sql, $options = array('cursor' => DB2_SCROL
               $c = 0;
 
               $sqlDB21 = " SELECT
-	STOCKTRANSACTION.TRANSACTIONDATE,
-	STOCKTRANSACTION.PROJECTCODE,
-	STOCKTRANSACTION.CREATIONUSER,
-	INTERNALDOCUMENTLINE.SUBCODE01,
-    INTERNALDOCUMENTLINE.SUBCODE02,
-    INTERNALDOCUMENTLINE.SUBCODE03,
-    INTERNALDOCUMENTLINE.SUBCODE04,
-    INTERNALDOCUMENTLINE.ORDERLINE,
-    INTERNALDOCUMENTLINE.EXTERNALREFERENCE,
-    INTERNALDOCUMENTLINE.ITEMDESCRIPTION,
-    STOCKTRANSACTION.LOTCODE, 
-    STOCKTRANSACTION.USERPRIMARYUOMCODE,
-    INTERNALDOCUMENT.PROVISIONALCOUNTERCODE,    
-    STOCKTRANSACTION.WHSLOCATIONWAREHOUSEZONECODE,
-    STOCKTRANSACTION.WAREHOUSELOCATIONCODE,
-    INTERNALDOCUMENTLINE.DESTINATIONWAREHOUSECODE,
-    FULLITEMKEYDECODER.SUMMARIZEDDESCRIPTION,
-    INTERNALDOCUMENT.PROVISIONALCODE,
-   	SUM(STOCKTRANSACTION.BASEPRIMARYQUANTITY) AS QTY1_KG,
-	SUM(STOCKTRANSACTION.WEIGHTNET) AS QTY_KG,
-	COUNT(STOCKTRANSACTION.WEIGHTNET) AS QTY_ROL
-FROM
-    INTERNALDOCUMENT INTERNALDOCUMENT
-LEFT JOIN INTERNALDOCUMENTLINE INTERNALDOCUMENTLINE ON
-    INTERNALDOCUMENT.PROVISIONALCOUNTERCODE = INTERNALDOCUMENTLINE.INTDOCPROVISIONALCOUNTERCODE
-    AND INTERNALDOCUMENT.PROVISIONALCODE = INTERNALDOCUMENTLINE.INTDOCUMENTPROVISIONALCODE
-	AND INTERNALDOCUMENTLINE.DESTINATIONWAREHOUSECODE='M021'
-LEFT JOIN STOCKTRANSACTION STOCKTRANSACTION ON
-    INTERNALDOCUMENTLINE.INTDOCUMENTPROVISIONALCODE = STOCKTRANSACTION.ORDERCODE
-    AND INTERNALDOCUMENTLINE.ORDERLINE = STOCKTRANSACTION.ORDERLINE
-LEFT JOIN FULLITEMKEYDECODER FULLITEMKEYDECODER ON
-    STOCKTRANSACTION.FULLITEMIDENTIFIER = FULLITEMKEYDECODER.IDENTIFIER
-WHERE
-    STOCKTRANSACTION.TEMPLATECODE = '204'
-    AND STOCKTRANSACTION.LOGICALWAREHOUSECODE = 'M021' 
-    AND STOCKTRANSACTION.TRANSACTIONDATE BETWEEN '$Awal' AND '$Akhir'
-	AND NOT INTERNALDOCUMENTLINE.ORDERLINE IS NULL
-GROUP BY
-	STOCKTRANSACTION.TRANSACTIONDATE,
-	STOCKTRANSACTION.PROJECTCODE,
-	STOCKTRANSACTION.CREATIONUSER,
-	INTERNALDOCUMENTLINE.SUBCODE01,
-    INTERNALDOCUMENTLINE.SUBCODE02,
-    INTERNALDOCUMENTLINE.SUBCODE03,
-    INTERNALDOCUMENTLINE.SUBCODE04,
-    INTERNALDOCUMENTLINE.ORDERLINE,
-    INTERNALDOCUMENTLINE.EXTERNALREFERENCE,
-    INTERNALDOCUMENTLINE.ITEMDESCRIPTION,
-    STOCKTRANSACTION.LOTCODE, 
-    STOCKTRANSACTION.USERPRIMARYUOMCODE,
-    INTERNALDOCUMENT.PROVISIONALCOUNTERCODE,    
-    STOCKTRANSACTION.WHSLOCATIONWAREHOUSEZONECODE,
-    STOCKTRANSACTION.WAREHOUSELOCATIONCODE,
-    INTERNALDOCUMENTLINE.DESTINATIONWAREHOUSECODE,
+                            STOCKTRANSACTION.TRANSACTIONDATE,
+                            STOCKTRANSACTION.PROJECTCODE,
+                            STOCKTRANSACTION.CREATIONUSER,
+                            INTERNALDOCUMENTLINE.SUBCODE01,
+                            INTERNALDOCUMENTLINE.SUBCODE02,
+                            INTERNALDOCUMENTLINE.SUBCODE03,
+                            INTERNALDOCUMENTLINE.SUBCODE04,
+                            INTERNALDOCUMENTLINE.ORDERLINE,
+                            INTERNALDOCUMENTLINE.EXTERNALREFERENCE,
+                            INTERNALDOCUMENTLINE.ITEMDESCRIPTION,
+                            STOCKTRANSACTION.LOTCODE, 
+                            STOCKTRANSACTION.USERPRIMARYUOMCODE,
+                            INTERNALDOCUMENT.PROVISIONALCOUNTERCODE,    
+                            STOCKTRANSACTION.WHSLOCATIONWAREHOUSEZONECODE,
+                            STOCKTRANSACTION.WAREHOUSELOCATIONCODE,
+                            INTERNALDOCUMENTLINE.DESTINATIONWAREHOUSECODE,
+                            FULLITEMKEYDECODER.SUMMARIZEDDESCRIPTION,
+                            INTERNALDOCUMENT.PROVISIONALCODE,
+                            SUM(STOCKTRANSACTION.BASEPRIMARYQUANTITY) AS QTY1_KG,
+                            SUM(STOCKTRANSACTION.WEIGHTNET) AS QTY_KG,
+                            COUNT(STOCKTRANSACTION.WEIGHTNET) AS QTY_ROL
+                          FROM
+                              INTERNALDOCUMENT INTERNALDOCUMENT
+                          LEFT JOIN INTERNALDOCUMENTLINE INTERNALDOCUMENTLINE ON
+                              INTERNALDOCUMENT.PROVISIONALCOUNTERCODE = INTERNALDOCUMENTLINE.INTDOCPROVISIONALCOUNTERCODE
+                              AND INTERNALDOCUMENT.PROVISIONALCODE = INTERNALDOCUMENTLINE.INTDOCUMENTPROVISIONALCODE
+                            AND INTERNALDOCUMENTLINE.DESTINATIONWAREHOUSECODE='M021'
+                          LEFT JOIN STOCKTRANSACTION STOCKTRANSACTION ON
+                              INTERNALDOCUMENTLINE.INTDOCUMENTPROVISIONALCODE = STOCKTRANSACTION.ORDERCODE
+                              AND INTERNALDOCUMENTLINE.ORDERLINE = STOCKTRANSACTION.ORDERLINE
+                          LEFT JOIN FULLITEMKEYDECODER FULLITEMKEYDECODER ON
+                              STOCKTRANSACTION.FULLITEMIDENTIFIER = FULLITEMKEYDECODER.IDENTIFIER
+                          WHERE
+                              STOCKTRANSACTION.TEMPLATECODE = '204'
+                              AND STOCKTRANSACTION.LOGICALWAREHOUSECODE = 'M021' 
+                              AND STOCKTRANSACTION.TRANSACTIONDATE BETWEEN '$Awal' AND '$Akhir'
+                            AND NOT INTERNALDOCUMENTLINE.ORDERLINE IS NULL
+                          GROUP BY
+                            STOCKTRANSACTION.TRANSACTIONDATE,
+                            STOCKTRANSACTION.PROJECTCODE,
+                            STOCKTRANSACTION.CREATIONUSER,
+                            INTERNALDOCUMENTLINE.SUBCODE01,
+                              INTERNALDOCUMENTLINE.SUBCODE02,
+                              INTERNALDOCUMENTLINE.SUBCODE03,
+                              INTERNALDOCUMENTLINE.SUBCODE04,
+                              INTERNALDOCUMENTLINE.ORDERLINE,
+                              INTERNALDOCUMENTLINE.EXTERNALREFERENCE,
+                              INTERNALDOCUMENTLINE.ITEMDESCRIPTION,
+                              STOCKTRANSACTION.LOTCODE, 
+                              STOCKTRANSACTION.USERPRIMARYUOMCODE,
+                              INTERNALDOCUMENT.PROVISIONALCOUNTERCODE,    
+                              STOCKTRANSACTION.WHSLOCATIONWAREHOUSEZONECODE,
+                              STOCKTRANSACTION.WAREHOUSELOCATIONCODE,
+                              INTERNALDOCUMENTLINE.DESTINATIONWAREHOUSECODE,
     FULLITEMKEYDECODER.SUMMARIZEDDESCRIPTION,
     INTERNALDOCUMENT.PROVISIONALCODE ";
-              $stmt1   = db2_prepare_execute($conn1, $sqlDB21);
+              $stmt1   = db2_prepare($conn1, $sqlDB21);
+              db2_execute($stmt1);
+
               //}				  
               while ($rowdb21 = db2_fetch_assoc($stmt1)) {
                 $sqlDB22 = " SELECT SALESORDER.CODE, SALESORDER.EXTERNALREFERENCE, SALESORDER.ORDPRNCUSTOMERSUPPLIERCODE,
-		ITXVIEWAKJ.LEGALNAME1, ITXVIEWAKJ.ORDERPARTNERBRANDCODE, ITXVIEWAKJ.LONGDESCRIPTION
-		FROM DB2ADMIN.SALESORDER SALESORDER LEFT OUTER JOIN DB2ADMIN.ITXVIEWAKJ 
-       	ITXVIEWAKJ ON SALESORDER.CODE=ITXVIEWAKJ.CODE
-		WHERE SALESORDER.CODE='" . trim($rowdb21['PROJECTCODE']) . "' ";
-                $stmt2   = db2_prepare_execute($conn1, $sqlDB22);
-                $rowdb22 = db2_fetch_assoc($stmt2);
+                              ITXVIEWAKJ.LEGALNAME1, ITXVIEWAKJ.ORDERPARTNERBRANDCODE, ITXVIEWAKJ.LONGDESCRIPTION
+                              FROM DB2ADMIN.SALESORDER SALESORDER LEFT OUTER JOIN DB2ADMIN.ITXVIEWAKJ 
+                                  ITXVIEWAKJ ON SALESORDER.CODE=ITXVIEWAKJ.CODE
+                              WHERE SALESORDER.CODE='" . trim($rowdb21['PROJECTCODE']) . "' ";
+                $rowdb22 = cacheResult(trim($rowdb21['PROJECTCODE']), $cacheSalesOrder, function () use ($conn1, $sqlDB22) {
+                  $stmt = db2_prepare($conn1, $sqlDB22);
+                  db2_execute($stmt);
+                  $result = db2_fetch_assoc($stmt);
+                  return $result ? $result : array();
+                });
                 $sqlDB23 = " SELECT p.SUBCODE01,p.SUBCODE02,p.SUBCODE03,p.SUBCODE04,p.SUBCODE05,p.SUBCODE06,p.SUBCODE07, p.LONGDESCRIPTION FROM (
-SELECT p2.ITEMTYPEAFICODE,p2.SUBCODE01,p2.SUBCODE02,p2.SUBCODE03,p2.SUBCODE04,
-p2.SUBCODE05,p2.SUBCODE06,p2.SUBCODE07  FROM PRODUCTIONDEMAND p 
-LEFT OUTER JOIN PRODUCTIONRESERVATION p2 ON p.CODE =p2.ORDERCODE 
-WHERE p.ITEMTYPEAFICODE ='KGF' AND p.SUBCODE01='" . trim($rowdb21['SUBCODE01']) . "' 
-AND p.SUBCODE02 ='" . trim($rowdb21['SUBCODE02']) . "' AND p.SUBCODE03 ='" . trim($rowdb21['SUBCODE03']) . "' AND
-p.SUBCODE04='" . trim($rowdb21['SUBCODE04']) . "' AND (p.PROJECTCODE ='" . trim($rowdb21['PROJECTCODE']) . "' OR p.ORIGDLVSALORDLINESALORDERCODE  ='" . trim($rowdb21['PROJECTCODE']) . "')
-) a LEFT OUTER JOIN PRODUCT p ON
-p.ITEMTYPECODE ='GYR' AND
-p.SUBCODE01= a.SUBCODE01 AND p.SUBCODE02= a.SUBCODE02 AND 
-p.SUBCODE03= a.SUBCODE03 AND p.SUBCODE04= a.SUBCODE04 AND 
-p.SUBCODE05= a.SUBCODE05 AND p.SUBCODE06= a.SUBCODE06 AND
-p.SUBCODE07= a.SUBCODE07 
-GROUP BY 
-p.SUBCODE01,p.SUBCODE02, 
-p.SUBCODE03,p.SUBCODE04,
-p.SUBCODE05,p.SUBCODE06,
-p.SUBCODE07,p.LONGDESCRIPTION ";
-                $stmt3   = db2_prepare_execute($conn1, $sqlDB23);
-                $ai = 0;
-                $a[0] = "";
-                $a[1] = "";
-                $a[2] = "";
-                $a[3] = "";
-                while ($rowdb23 = db2_fetch_assoc($stmt3)) {
-                  $a[$ai] = $rowdb23['LONGDESCRIPTION'];
-                  $ai++;
-                }
+                            SELECT p2.ITEMTYPEAFICODE,p2.SUBCODE01,p2.SUBCODE02,p2.SUBCODE03,p2.SUBCODE04,
+                            p2.SUBCODE05,p2.SUBCODE06,p2.SUBCODE07  FROM PRODUCTIONDEMAND p 
+                            LEFT OUTER JOIN PRODUCTIONRESERVATION p2 ON p.CODE =p2.ORDERCODE 
+                            WHERE p.ITEMTYPEAFICODE ='KGF' AND p.SUBCODE01='" . trim($rowdb21['SUBCODE01']) . "' 
+                            AND p.SUBCODE02 ='" . trim($rowdb21['SUBCODE02']) . "' AND p.SUBCODE03 ='" . trim($rowdb21['SUBCODE03']) . "' AND
+                            p.SUBCODE04='" . trim($rowdb21['SUBCODE04']) . "' AND (p.PROJECTCODE ='" . trim($rowdb21['PROJECTCODE']) . "' OR p.ORIGDLVSALORDLINESALORDERCODE  ='" . trim($rowdb21['PROJECTCODE']) . "')
+                            ) a LEFT OUTER JOIN PRODUCT p ON
+                            p.ITEMTYPECODE ='GYR' AND
+                            p.SUBCODE01= a.SUBCODE01 AND p.SUBCODE02= a.SUBCODE02 AND 
+                            p.SUBCODE03= a.SUBCODE03 AND p.SUBCODE04= a.SUBCODE04 AND 
+                            p.SUBCODE05= a.SUBCODE05 AND p.SUBCODE06= a.SUBCODE06 AND
+                            p.SUBCODE07= a.SUBCODE07 
+                            GROUP BY 
+                            p.SUBCODE01,p.SUBCODE02, 
+                            p.SUBCODE03,p.SUBCODE04,
+                            p.SUBCODE05,p.SUBCODE06,
+                            p.SUBCODE07,p.LONGDESCRIPTION ";
+                $a = cacheResult(trim($rowdb21['SUBCODE01']) . '|' . trim($rowdb21['SUBCODE02']) . '|' . trim($rowdb21['SUBCODE03']) . '|' . trim($rowdb21['SUBCODE04']) . '|' . trim($rowdb21['PROJECTCODE']), $cacheProdDesc, function () use ($conn1, $sqlDB23) {
+                  $stmt = db2_prepare($conn1, $sqlDB23);
+                  db2_execute($stmt);
+                  $list = array("", "", "", "");
+                  $ai = 0;
+                  while ($row = db2_fetch_assoc($stmt)) {
+                    if ($ai < 4) {
+                      $list[$ai] = $row['LONGDESCRIPTION'];
+                    }
+                    $ai++;
+                  }
+                  return $list;
+                });
 
                 $bon = trim($rowdb21['PROVISIONALCODE']) . "-" . trim($rowdb21['ORDERLINE']);
                 $itemc = trim($rowdb21['SUBCODE02']) . "" . trim($rowdb21['SUBCODE03']) . " " . trim($rowdb21['SUBCODE04']);
@@ -210,110 +229,130 @@ p.SUBCODE07,p.LONGDESCRIPTION ";
                   $knitt = 'KNITTING ITTI- GREIGE';
                 }
                 $sqlDB24 = " SELECT LISTAGG(DISTINCT  TRIM(BLKOKASI.WAREHOUSELOCATIONCODE),', ') AS WAREHOUSELOCATIONCODE
-	 FROM
-(SELECT DISTINCT STKBLANCE.ELEMENTSCODE,  
-       STKBLANCE.WAREHOUSELOCATIONCODE,
-	   ITXVIEWLAPMASUKGREIGE.PROVISIONALCODE,ITXVIEWLAPMASUKGREIGE.ORDERLINE
-       FROM DB2ADMIN.STOCKTRANSACTION STOCKTRANSACTION LEFT OUTER JOIN
-DB2ADMIN.ITXVIEWLAPMASUKGREIGE ITXVIEWLAPMASUKGREIGE ON ITXVIEWLAPMASUKGREIGE.PROVISIONALCODE  = STOCKTRANSACTION.ORDERCODE
-AND ITXVIEWLAPMASUKGREIGE.ORDERLINE  = STOCKTRANSACTION.ORDERLINE
-AND ITXVIEWLAPMASUKGREIGE.PROVISIONALCOUNTERCODE  = STOCKTRANSACTION.ORDERCOUNTERCODE  
-AND ITXVIEWLAPMASUKGREIGE.ITEMTYPEAFICODE = STOCKTRANSACTION.ITEMTYPECODE 
-AND ITXVIEWLAPMASUKGREIGE.SUBCODE01= STOCKTRANSACTION.DECOSUBCODE01
-AND ITXVIEWLAPMASUKGREIGE.SUBCODE02= STOCKTRANSACTION.DECOSUBCODE02
-AND ITXVIEWLAPMASUKGREIGE.SUBCODE03= STOCKTRANSACTION.DECOSUBCODE03
-AND ITXVIEWLAPMASUKGREIGE.SUBCODE04= STOCKTRANSACTION.DECOSUBCODE04
-INNER JOIN ( SELECT
-	b.WAREHOUSELOCATIONCODE,b.ELEMENTSCODE  
-FROM BALANCE b  
-WHERE b.ITEMTYPECODE ='KGF'  AND b.LOGICALWAREHOUSECODE ='M021' ) AS STKBLANCE ON STKBLANCE.ELEMENTSCODE=STOCKTRANSACTION.ITEMELEMENTCODE
-WHERE STOCKTRANSACTION.ORDERCODE ='$rowdb21[PROVISIONALCODE]'  and STOCKTRANSACTION.ORDERLINE ='$rowdb21[ORDERLINE]' AND
-STOCKTRANSACTION.LOGICALWAREHOUSECODE ='M021' 
-AND NOT ITXVIEWLAPMASUKGREIGE.ORDERLINE IS NULL) AS BLKOKASI ";
-                $stmt4   = db2_prepare_execute($conn1, $sqlDB24);
+                              FROM
+                            (SELECT DISTINCT STKBLANCE.ELEMENTSCODE,  
+                                  STKBLANCE.WAREHOUSELOCATIONCODE,
+                                ITXVIEWLAPMASUKGREIGE.PROVISIONALCODE,ITXVIEWLAPMASUKGREIGE.ORDERLINE
+                                  FROM DB2ADMIN.STOCKTRANSACTION STOCKTRANSACTION LEFT OUTER JOIN
+                            DB2ADMIN.ITXVIEWLAPMASUKGREIGE ITXVIEWLAPMASUKGREIGE ON ITXVIEWLAPMASUKGREIGE.PROVISIONALCODE  = STOCKTRANSACTION.ORDERCODE
+                            AND ITXVIEWLAPMASUKGREIGE.ORDERLINE  = STOCKTRANSACTION.ORDERLINE
+                            AND ITXVIEWLAPMASUKGREIGE.PROVISIONALCOUNTERCODE  = STOCKTRANSACTION.ORDERCOUNTERCODE  
+                            AND ITXVIEWLAPMASUKGREIGE.ITEMTYPEAFICODE = STOCKTRANSACTION.ITEMTYPECODE 
+                            AND ITXVIEWLAPMASUKGREIGE.SUBCODE01= STOCKTRANSACTION.DECOSUBCODE01
+                            AND ITXVIEWLAPMASUKGREIGE.SUBCODE02= STOCKTRANSACTION.DECOSUBCODE02
+                            AND ITXVIEWLAPMASUKGREIGE.SUBCODE03= STOCKTRANSACTION.DECOSUBCODE03
+                            AND ITXVIEWLAPMASUKGREIGE.SUBCODE04= STOCKTRANSACTION.DECOSUBCODE04
+                            INNER JOIN ( SELECT
+                              b.WAREHOUSELOCATIONCODE,b.ELEMENTSCODE  
+                            FROM BALANCE b  
+                            WHERE b.ITEMTYPECODE ='KGF'  AND b.LOGICALWAREHOUSECODE ='M021' ) AS STKBLANCE ON STKBLANCE.ELEMENTSCODE=STOCKTRANSACTION.ITEMELEMENTCODE
+                            WHERE STOCKTRANSACTION.ORDERCODE ='$rowdb21[PROVISIONALCODE]'  and STOCKTRANSACTION.ORDERLINE ='$rowdb21[ORDERLINE]' AND
+                            STOCKTRANSACTION.LOGICALWAREHOUSECODE ='M021' 
+                            AND NOT ITXVIEWLAPMASUKGREIGE.ORDERLINE IS NULL) AS BLKOKASI ";
+                $stmt4   = db2_prepare($conn1, $sqlDB24);
+                db2_execute($stmt4);
                 $rowdb24 = db2_fetch_assoc($stmt4);
 
                 $sqlDB25 = " SELECT
-   QUALITYDOCLINE.VALUEQUANTITY AS LEBAR1,GSM.VALUEQUANTITY AS GSM1
-FROM
-    QUALITYDOCLINE 
-LEFT OUTER JOIN 
-(SELECT
-  QUALITYDOCPRODUCTIONORDERCODE,VALUEQUANTITY
-FROM
-    QUALITYDOCLINE
-WHERE
-	QUALITYDOCUMENTHEADERNUMBERID ='35' AND
-    QUALITYDOCLINE.CHARACTERISTICCODE = 'GSM' AND 
-	QUALITYDOCUMENTITEMTYPEAFICODE ='KGF'
-	) GSM ON GSM.QUALITYDOCPRODUCTIONORDERCODE=QUALITYDOCLINE.QUALITYDOCPRODUCTIONORDERCODE
-WHERE
-	QUALITYDOCUMENTHEADERNUMBERID ='35'  AND
-	QUALITYDOCLINE.CHARACTERISTICCODE = 'LEBAR1' AND
-	QUALITYDOCUMENTITEMTYPEAFICODE ='KGF' AND
-	QUALITYDOCLINE.QUALITYDOCPRODUCTIONORDERCODE='$rowdb21[EXTERNALREFERENCE]' ";
-                $stmt5   = db2_prepare_execute($conn1, $sqlDB25);
-                $rowdb25 = db2_fetch_assoc($stmt5);
+                              QUALITYDOCLINE.VALUEQUANTITY AS LEBAR1,GSM.VALUEQUANTITY AS GSM1
+                            FROM
+                                QUALITYDOCLINE 
+                            LEFT OUTER JOIN 
+                            (SELECT
+                              QUALITYDOCPRODUCTIONORDERCODE,VALUEQUANTITY
+                            FROM
+                                QUALITYDOCLINE
+                            WHERE
+                              QUALITYDOCUMENTHEADERNUMBERID ='35' AND
+                                QUALITYDOCLINE.CHARACTERISTICCODE = 'GSM' AND 
+                              QUALITYDOCUMENTITEMTYPEAFICODE ='KGF'
+                              ) GSM ON GSM.QUALITYDOCPRODUCTIONORDERCODE=QUALITYDOCLINE.QUALITYDOCPRODUCTIONORDERCODE
+                            WHERE
+                              QUALITYDOCUMENTHEADERNUMBERID ='35'  AND
+                              QUALITYDOCLINE.CHARACTERISTICCODE = 'LEBAR1' AND
+                              QUALITYDOCUMENTITEMTYPEAFICODE ='KGF' AND
+                              QUALITYDOCLINE.QUALITYDOCPRODUCTIONORDERCODE='$rowdb21[EXTERNALREFERENCE]' ";
+                $rowdb25 = cacheResult(trim($rowdb21['EXTERNALREFERENCE']), $cacheQuality35, function () use ($conn1, $sqlDB25) {
+                  $stmt = db2_prepare($conn1, $sqlDB25);
+                  db2_execute($stmt);
+                  $result = db2_fetch_assoc($stmt);
+                  return $result ? $result : array();
+                });
 
                 $sqlDB26 = " SELECT
-   QUALITYDOCLINE.VALUEQUANTITY AS LEBAR1,GSM.VALUEQUANTITY AS GSM1
-FROM
-    QUALITYDOCLINE 
-LEFT OUTER JOIN 
-(SELECT
-  QUALITYDOCPRODUCTIONORDERCODE,VALUEQUANTITY
-FROM
-    QUALITYDOCLINE
-WHERE
-	QUALITYDOCUMENTHEADERNUMBERID ='1379' AND
-    QUALITYDOCLINE.CHARACTERISTICCODE = 'GSM' AND 
-	QUALITYDOCUMENTITEMTYPEAFICODE ='KGF'
-	) GSM ON GSM.QUALITYDOCPRODUCTIONORDERCODE=QUALITYDOCLINE.QUALITYDOCPRODUCTIONORDERCODE
-WHERE
-	QUALITYDOCUMENTHEADERNUMBERID ='1379' AND
-	QUALITYDOCLINE.CHARACTERISTICCODE = 'LEBAR1' AND
-	QUALITYDOCUMENTITEMTYPEAFICODE ='KGF' AND
-	QUALITYDOCLINE.QUALITYDOCPRODUCTIONORDERCODE='$rowdb21[EXTERNALREFERENCE]' ";
-                $stmt6   = db2_prepare_execute($conn1, $sqlDB26);
-                $rowdb26 = db2_fetch_assoc($stmt6);
+                            QUALITYDOCLINE.VALUEQUANTITY AS LEBAR1,GSM.VALUEQUANTITY AS GSM1
+                          FROM
+                              QUALITYDOCLINE 
+                          LEFT OUTER JOIN 
+                          (SELECT
+                            QUALITYDOCPRODUCTIONORDERCODE,VALUEQUANTITY
+                          FROM
+                              QUALITYDOCLINE
+                          WHERE
+                            QUALITYDOCUMENTHEADERNUMBERID ='1379' AND
+                              QUALITYDOCLINE.CHARACTERISTICCODE = 'GSM' AND 
+                            QUALITYDOCUMENTITEMTYPEAFICODE ='KGF'
+                            ) GSM ON GSM.QUALITYDOCPRODUCTIONORDERCODE=QUALITYDOCLINE.QUALITYDOCPRODUCTIONORDERCODE
+                          WHERE
+                            QUALITYDOCUMENTHEADERNUMBERID ='1379' AND
+                            QUALITYDOCLINE.CHARACTERISTICCODE = 'LEBAR1' AND
+                            QUALITYDOCUMENTITEMTYPEAFICODE ='KGF' AND
+                            QUALITYDOCLINE.QUALITYDOCPRODUCTIONORDERCODE='$rowdb21[EXTERNALREFERENCE]' ";
+                $rowdb26 = cacheResult(trim($rowdb21['EXTERNALREFERENCE']), $cacheQuality1379, function () use ($conn1, $sqlDB26) {
+                  $stmt = db2_prepare($conn1, $sqlDB26);
+                  db2_execute($stmt);
+                  $result = db2_fetch_assoc($stmt);
+                  return $result ? $result : array();
+                });
 
                 $sqlDB27 = " 
-SELECT ad.VALUESTRING AS NO_MESIN
-FROM PRODUCTIONDEMAND pd 	
-LEFT OUTER JOIN ADSTORAGE ad ON ad.UNIQUEID = pd.ABSUNIQUEID AND ad.NAMENAME ='MachineNo'
-WHERE  pd.CODE ='$rowdb21[LOTCODE]'
-GROUP BY ad.VALUESTRING
-";
-                $stmt7   = db2_prepare_execute($conn1, $sqlDB27);
-                $rowdb27 = db2_fetch_assoc($stmt7);
+                          SELECT ad.VALUESTRING AS NO_MESIN
+                          FROM PRODUCTIONDEMAND pd 	
+                          LEFT OUTER JOIN ADSTORAGE ad ON ad.UNIQUEID = pd.ABSUNIQUEID AND ad.NAMENAME ='MachineNo'
+                          WHERE  pd.CODE ='$rowdb21[LOTCODE]'
+                          GROUP BY ad.VALUESTRING";
+                $rowdb27 = cacheResult(trim($rowdb21['LOTCODE']), $cacheMachineNo, function () use ($conn1, $sqlDB27) {
+                  $stmt = db2_prepare($conn1, $sqlDB27);
+                  db2_execute($stmt);
+                  $result = db2_fetch_assoc($stmt);
+                  return $result ? $result : array();
+                });
                 $sqlDB28 = " SELECT a.VALUEDECIMAL  FROM PRODUCT p 
-LEFT OUTER JOIN ADSTORAGE a  ON a.UNIQUEID = p.ABSUNIQUEID 
-WHERE p.SUBCODE01='$rowdb21[SUBCODE01]' AND
-p.SUBCODE02='$rowdb21[SUBCODE02]' AND
-p.SUBCODE03='$rowdb21[SUBCODE03]' AND
-p.SUBCODE04='$rowdb21[SUBCODE04]' AND
-a.NAMENAME ='Width' AND
-p.ITEMTYPECODE ='KFF'  ";
-                $stmt8   = db2_prepare_execute($conn1, $sqlDB28);
-                $rowdb28 = db2_fetch_assoc($stmt8);
+                            LEFT OUTER JOIN ADSTORAGE a  ON a.UNIQUEID = p.ABSUNIQUEID 
+                            WHERE p.SUBCODE01='$rowdb21[SUBCODE01]' AND
+                            p.SUBCODE02='$rowdb21[SUBCODE02]' AND
+                            p.SUBCODE03='$rowdb21[SUBCODE03]' AND
+                            p.SUBCODE04='$rowdb21[SUBCODE04]' AND
+                            a.NAMENAME ='Width' AND
+                            p.ITEMTYPECODE ='KFF'  ";
+                $rowdb28 = cacheResult(trim($rowdb21['SUBCODE01']) . '|' . trim($rowdb21['SUBCODE02']) . '|' . trim($rowdb21['SUBCODE03']) . '|' . trim($rowdb21['SUBCODE04']), $cacheWidthKFF, function () use ($conn1, $sqlDB28) {
+                  $stmt = db2_prepare($conn1, $sqlDB28);
+                  db2_execute($stmt);
+                  $result = db2_fetch_assoc($stmt);
+                  return $result ? $result : array();
+                });
                 $sqlDB29 = " SELECT a.VALUEDECIMAL  FROM PRODUCT p 
-LEFT OUTER JOIN ADSTORAGE a  ON a.UNIQUEID = p.ABSUNIQUEID 
-WHERE p.SUBCODE01='$rowdb21[SUBCODE01]' AND
-p.SUBCODE02='$rowdb21[SUBCODE02]' AND
-p.SUBCODE03='$rowdb21[SUBCODE03]' AND
-p.SUBCODE04='$rowdb21[SUBCODE04]' AND
-a.NAMENAME ='GSM' AND
-p.ITEMTYPECODE ='KFF'  ";
-                $stmt9   = db2_prepare_execute($conn1, $sqlDB29);
-                $rowdb29 = db2_fetch_assoc($stmt9);
-                $sqlDB30 = " 
-SELECT e.WIDTHGROSS AS LEBAR1,a.VALUEDECIMAL AS GSM1,s.ORDERCODE,s.ORDERLINE  FROM ELEMENTSINSPECTION e 
-LEFT OUTER JOIN ADSTORAGE a ON a.UNIQUEID =e.ABSUNIQUEID AND a.NAMENAME ='GSM'
-LEFT OUTER JOIN STOCKTRANSACTION s ON s.ITEMELEMENTCODE =e.ELEMENTCODE
-WHERE s.ORDERCODE='" . $rowdb21['PROVISIONALCODE'] . "' AND s.ORDERLINE='" . $rowdb21['ORDERLINE'] . "'
-GROUP BY s.ORDERCODE,s.ORDERLINE,e.WIDTHGROSS,a.VALUEDECIMAL
-";
-                $stmt10   = db2_prepare_execute($conn1, $sqlDB30);
+                            LEFT OUTER JOIN ADSTORAGE a  ON a.UNIQUEID = p.ABSUNIQUEID 
+                            WHERE p.SUBCODE01='$rowdb21[SUBCODE01]' AND
+                            p.SUBCODE02='$rowdb21[SUBCODE02]' AND
+                            p.SUBCODE03='$rowdb21[SUBCODE03]' AND
+                            p.SUBCODE04='$rowdb21[SUBCODE04]' AND
+                            a.NAMENAME ='GSM' AND
+                            p.ITEMTYPECODE ='KFF'  ";
+                $rowdb29 = cacheResult(trim($rowdb21['SUBCODE01']) . '|' . trim($rowdb21['SUBCODE02']) . '|' . trim($rowdb21['SUBCODE03']) . '|' . trim($rowdb21['SUBCODE04']), $cacheGsmKFF, function () use ($conn1, $sqlDB29) {
+                  $stmt = db2_prepare($conn1, $sqlDB29);
+                  db2_execute($stmt);
+                  $result = db2_fetch_assoc($stmt);
+                  return $result ? $result : array();
+                });
+                $sqlDB30 = "SELECT e.WIDTHGROSS AS LEBAR1,a.VALUEDECIMAL AS GSM1,s.ORDERCODE,s.ORDERLINE  FROM ELEMENTSINSPECTION e 
+                          LEFT OUTER JOIN ADSTORAGE a ON a.UNIQUEID =e.ABSUNIQUEID AND a.NAMENAME ='GSM'
+                          LEFT OUTER JOIN STOCKTRANSACTION s ON s.ITEMELEMENTCODE =e.ELEMENTCODE
+                          WHERE s.ORDERCODE='" . $rowdb21['PROVISIONALCODE'] . "' AND s.ORDERLINE='" . $rowdb21['ORDERLINE'] . "'
+                          GROUP BY s.ORDERCODE,s.ORDERLINE,e.WIDTHGROSS,a.VALUEDECIMAL
+                          ";
+                $stmt10   = db2_prepare($conn1, $sqlDB30);
+                db2_execute($stmt10);
                 $rowdb30 = db2_fetch_assoc($stmt10);
                 if ($rowdb22['LEGALNAME1'] == "") {
                   $langganan = "";
@@ -343,68 +382,9 @@ GROUP BY s.ORDERCODE,s.ORDERLINE,e.WIDTHGROSS,a.VALUEDECIMAL
                   GROUP BY
                     ITEMELEMENTCODE";
 
-                $stmt_element = db2_prepare_execute($conn1, $query_element);
-
-                $element_codes = array();
-                while ($row_el = db2_fetch_assoc($stmt_element)) {
-                  if (isset($row_el['ITEMELEMENTCODE']) && $row_el['ITEMELEMENTCODE'] !== '') {
-                    $element_codes[] = $row_el['ITEMELEMENTCODE'];
-                  }
-                }
-
-                // Cek keberadaan element di BALANCE; hanya pakai yang ada di BALANCE
-                $elements_in_balance = array();
-                foreach ($element_codes as $code) {
-                  $cekbalance = "SELECT 1 FROM BALANCE WHERE ELEMENTSCODE = '" . addslashes($code) . "' FETCH FIRST 1 ROWS ONLY";
-                  $stmtCek = db2_prepare_execute($conn1, $cekbalance);
-                  $rowCek  = db2_fetch_assoc($stmtCek);
-                  if (!empty($rowCek)) {
-                    $elements_in_balance[] = $code;
-                  }
-                }
-
-                // Jumlah element yang ada di BALANCE
-                $jumlah_element = count($elements_in_balance);
-                $missing_count = 0;
-                $user  = '';
-                // Hanya periksa awal/akhir untuk element yang ada di BALANCE
-                foreach ($elements_in_balance as $elcode) {
-                  $awal_akhir = "SELECT
-                    TEMPLATECODE,
-                    WAREHOUSELOCATIONCODE,
-                    TRANSACTIONDATE,
-                    CREATIONUSER
-                  FROM
-                    DB2ADMIN.STOCKTRANSACTION STOCKTRANSACTION
-                  WHERE
-                    STOCKTRANSACTION.ITEMELEMENTCODE = '" . addslashes($elcode) . "'
-                    AND STOCKTRANSACTION.TEMPLATECODE = '302'
-                  ORDER BY
-                    STOCKTRANSACTION.TRANSACTIONDATE DESC
-                  FETCH FIRST
-                    1 ROWS ONLY";
-                  $excee = db2_prepare_execute($conn1, $awal_akhir);
-                  $exce  = db2_fetch_assoc($excee);
-                  if (!$exce || empty($exce)) {
-                    $missing_count++;
-                  } else {
-                    if (isset($exce['CREATIONUSER']) && $exce['CREATIONUSER'] !== '') {
-                      $user = $exce['CREATIONUSER'];
-                    }
-                  }
-                }
-
-                $stts = '';
-                // Jika element_codes tidak ada di hasil cekbalance (BALANCE), maka status OK
-                if ($jumlah_element === 0) {
-                  $stts = "<small class='badge badge-success'>OK</small>";
-                } elseif ($missing_count === 0) {
-                  // Jika ada di BALANCE dan tidak ada yang missing, juga OK
-                  $stts = "<small class='badge badge-success'>OK</small>";
-                } else {
-                  // Selain kondisi di atas, NOT OK dan tampilkan jumlah missing
-                  $stts = "<small class='badge badge-danger'>NOT OK</small> <span>(" . $missing_count . ")</span>";
-                }
+                // Cek status element sekali saja (agregat) untuk kurangi query
+                // Status element akan di-load via AJAX (default kosong)
+                $stts = "<small class='badge badge-secondary status-lazy' data-ord='" . htmlspecialchars(trim($rowdb21['PROVISIONALCODE'])) . "' data-line='" . htmlspecialchars(trim($rowdb21['ORDERLINE'])) . "'>...</small>";
               ?>
                 <tr>
                   <td style="text-align: center"><?php echo $no; ?></td>
@@ -570,7 +550,8 @@ s.TRANSACTIONDATE,s.DECOSUBCODE01,s.DECOSUBCODE02,
 s.DECOSUBCODE03, s.DECOSUBCODE04,
 s.WHSLOCATIONWAREHOUSEZONECODE,
 s.WAREHOUSELOCATIONCODE, s.LOTCODE, f.SUMMARIZEDDESCRIPTION, s.CREATIONUSER, a1.VALUESTRING, a2.VALUESTRING";
-              $stmt1R   = db2_prepare_execute($conn1, $sqlDB21R);
+              $stmt1R   = db2_prepare($conn1, $sqlDB21R);
+              db2_execute($stmt1R);
 
               //}				  
               while ($rowdb21R = db2_fetch_assoc($stmt1R)) {
@@ -581,7 +562,8 @@ s.WAREHOUSELOCATIONCODE, s.LOTCODE, f.SUMMARIZEDDESCRIPTION, s.CREATIONUSER, a1.
 		FROM DB2ADMIN.SALESORDER SALESORDER LEFT OUTER JOIN DB2ADMIN.ITXVIEWAKJ 
        	ITXVIEWAKJ ON SALESORDER.CODE=ITXVIEWAKJ.CODE
 		WHERE SALESORDER.CODE='" . trim($rowdb21R['PROJECTCODE']) . "' ";
-                $stmt2R1   = db2_prepare_execute($conn1, $sqlDB22R1);
+                $stmt2R1   = db2_prepare($conn1, $sqlDB22R1);
+                db2_execute($stmt2R1);
                 $rowdb22R1 = db2_fetch_assoc($stmt2R1);
 
                 $sqlDB22R = " SELECT LISTAGG(DISTINCT  TRIM(BALANCE.WAREHOUSELOCATIONCODE),', ') AS WAREHOUSELOCATIONCODE, COUNT(BALANCE.BASEPRIMARYQUANTITYUNIT) AS ROL,SUM(BALANCE.BASEPRIMARYQUANTITYUNIT) AS BERAT,BALANCE.LOTCODE  
@@ -599,7 +581,8 @@ s.ITEMELEMENTCODE
 		) STOCKTRANSACTION LEFT OUTER JOIN 
 		DB2ADMIN.BALANCE BALANCE ON BALANCE.ELEMENTSCODE =STOCKTRANSACTION.ITEMELEMENTCODE  
 		GROUP BY BALANCE.LOTCODE ";
-                $stmt2R   = db2_prepare_execute($conn1, $sqlDB22R);
+                $stmt2R   = db2_prepare($conn1, $sqlDB22R);
+                db2_execute($stmt2R);
                 $rowdb22R = db2_fetch_assoc($stmt2R);
                 $sqlDB23R = " SELECT p.SUBCODE01,p.SUBCODE02,p.SUBCODE03,p.SUBCODE04,p.SUBCODE05,p.SUBCODE06,p.SUBCODE07, p.LONGDESCRIPTION FROM (
 SELECT p2.ITEMTYPEAFICODE,p2.SUBCODE01,p2.SUBCODE02,p2.SUBCODE03,p2.SUBCODE04,
@@ -619,7 +602,8 @@ p.SUBCODE01,p.SUBCODE02,
 p.SUBCODE03,p.SUBCODE04,
 p.SUBCODE05,p.SUBCODE06,
 p.SUBCODE07,p.LONGDESCRIPTION ";
-                $stmt3R   = db2_prepare_execute($conn1, $sqlDB23R);
+                $stmt3R   = db2_prepare($conn1, $sqlDB23R);
+                db2_execute($stmt3R);
                 $aiR = 0;
                 $aR[0] = "";
                 $aR[1] = "";
@@ -633,7 +617,8 @@ p.SUBCODE07,p.LONGDESCRIPTION ";
 LEFT OUTER JOIN ADSTORAGE a ON a.UNIQUEID =e.ABSUNIQUEID AND a.NAMENAME ='GSM'
 WHERE e.ELEMENTITEMTYPECODE='KGF' AND e.DEMANDCODE='$rowdb21R[LOTCODE]'
 GROUP BY e.WIDTHGROSS,a.VALUEDECIMAL,e.DEMANDCODE ";
-$stmt6R   = db2_prepare_execute($conn1, $sqlDB26R);
+$stmt6R   = db2_prepare($conn1, $sqlDB26R);
+db2_execute($stmt6R);
 $rowdb26R = db2_fetch_assoc($stmt6R);*/
 
                 $sqlDB28R = " SELECT a.VALUEDECIMAL  FROM PRODUCT p 
@@ -644,7 +629,8 @@ p.SUBCODE03='" . trim($rowdb21R['DECOSUBCODE03']) . "' AND
 p.SUBCODE04='" . trim($rowdb21R['DECOSUBCODE04']) . "' AND
 a.NAMENAME ='Width' AND
 p.ITEMTYPECODE ='KFF'  ";
-                $stmt8R   = db2_prepare_execute($conn1, $sqlDB28R);
+                $stmt8R   = db2_prepare($conn1, $sqlDB28R);
+                db2_execute($stmt8R);
                 $rowdb28R = db2_fetch_assoc($stmt8R);
                 $sqlDB29R = " SELECT a.VALUEDECIMAL  FROM PRODUCT p 
 LEFT OUTER JOIN ADSTORAGE a  ON a.UNIQUEID = p.ABSUNIQUEID 
@@ -654,7 +640,8 @@ p.SUBCODE03='" . trim($rowdb21R['DECOSUBCODE03']) . "' AND
 p.SUBCODE04='" . trim($rowdb21R['DECOSUBCODE04']) . "' AND
 a.NAMENAME ='GSM' AND
 p.ITEMTYPECODE ='KFF'  ";
-                $stmt9R   = db2_prepare_execute($conn1, $sqlDB29R);
+                $stmt9R   = db2_prepare($conn1, $sqlDB29R);
+                db2_execute($stmt9R);
                 $rowdb29R = db2_fetch_assoc($stmt9R);
                 if ($rowdb22R1['LEGALNAME1'] == "") {
                   $langganan = "";
@@ -805,7 +792,8 @@ p.ITEMTYPECODE ='KFF'  ";
                               s.DECOSUBCODE03, s.DECOSUBCODE04,
                               s.WHSLOCATIONWAREHOUSEZONECODE,
                               s.WAREHOUSELOCATIONCODE, s.LOTCODE, f.SUMMARIZEDDESCRIPTION, s.CREATIONUSER, a1.VALUESTRING, a2.VALUESTRING";
-              $stmt1RBU   = db2_prepare_execute($conn1, $sqlDB21RBU);
+              $stmt1RBU   = db2_prepare($conn1, $sqlDB21RBU);
+              db2_execute($stmt1RBU);
               //}				  
               while ($rowdb21RBU = db2_fetch_assoc($stmt1RBU)) {
                 $itemcRBU = trim($rowdb21RBU['DECOSUBCODE02']) . "" . trim($rowdb21RBU['DECOSUBCODE03']) . " " . trim($rowdb21RBU['DECOSUBCODE04']);
@@ -815,7 +803,8 @@ p.ITEMTYPECODE ='KFF'  ";
                                 FROM DB2ADMIN.SALESORDER SALESORDER LEFT OUTER JOIN DB2ADMIN.ITXVIEWAKJ 
                                     ITXVIEWAKJ ON SALESORDER.CODE=ITXVIEWAKJ.CODE
                                 WHERE SALESORDER.CODE='" . trim($rowdb21RBU['PROJECTCODE']) . "' ";
-                $stmt2R1BU   = db2_prepare_execute($conn1, $sqlDB22R1BU);
+                $stmt2R1BU   = db2_prepare($conn1, $sqlDB22R1BU);
+                db2_execute($stmt2R1BU);
                 $rowdb22R1BU = db2_fetch_assoc($stmt2R1BU);
 
                 $sqlDB22RBU = " SELECT LISTAGG(DISTINCT  TRIM(BALANCE.WAREHOUSELOCATIONCODE),', ') AS WAREHOUSELOCATIONCODE, COUNT(BALANCE.BASEPRIMARYQUANTITYUNIT) AS ROL,SUM(BALANCE.BASEPRIMARYQUANTITYUNIT) AS BERAT,BALANCE.LOTCODE  
@@ -833,7 +822,8 @@ s.ITEMELEMENTCODE
 		) STOCKTRANSACTION LEFT OUTER JOIN 
 		DB2ADMIN.BALANCE BALANCE ON BALANCE.ELEMENTSCODE =STOCKTRANSACTION.ITEMELEMENTCODE  
 		GROUP BY BALANCE.LOTCODE ";
-                $stmt2RBU   = db2_prepare_execute($conn1, $sqlDB22RBU);
+                $stmt2RBU   = db2_prepare($conn1, $sqlDB22RBU);
+                db2_execute($stmt2RBU);
                 $rowdb22RBU = db2_fetch_assoc($stmt2RBU);
                 $sqlDB23RBU = " SELECT p.SUBCODE01,p.SUBCODE02,p.SUBCODE03,p.SUBCODE04,p.SUBCODE05,p.SUBCODE06,p.SUBCODE07, p.LONGDESCRIPTION FROM (
 SELECT p2.ITEMTYPEAFICODE,p2.SUBCODE01,p2.SUBCODE02,p2.SUBCODE03,p2.SUBCODE04,
@@ -853,7 +843,8 @@ p.SUBCODE01,p.SUBCODE02,
 p.SUBCODE03,p.SUBCODE04,
 p.SUBCODE05,p.SUBCODE06,
 p.SUBCODE07,p.LONGDESCRIPTION ";
-                $stmt3RBU   = db2_prepare_execute($conn1, $sqlDB23RBU);
+                $stmt3RBU   = db2_prepare($conn1, $sqlDB23RBU);
+                db2_execute($stmt3RBU);
                 $aiRBU = 0;
                 $aRBU[0] = "";
                 $aRBU[1] = "";
@@ -867,7 +858,8 @@ p.SUBCODE07,p.LONGDESCRIPTION ";
 LEFT OUTER JOIN ADSTORAGE a ON a.UNIQUEID =e.ABSUNIQUEID AND a.NAMENAME ='GSM'
 WHERE e.ELEMENTITEMTYPECODE='KGF' AND e.DEMANDCODE='$rowdb21R[LOTCODE]'
 GROUP BY e.WIDTHGROSS,a.VALUEDECIMAL,e.DEMANDCODE ";
-$stmt6R   = db2_prepare_execute($conn1, $sqlDB26R);
+$stmt6R   = db2_prepare($conn1, $sqlDB26R);
+db2_execute($stmt6R);
 $rowdb26R = db2_fetch_assoc($stmt6R);*/
 
                 $sqlDB28RBU = " SELECT a.VALUEDECIMAL  FROM PRODUCT p 
@@ -878,7 +870,8 @@ p.SUBCODE03='" . trim($rowdb21RBU['DECOSUBCODE03']) . "' AND
 p.SUBCODE04='" . trim($rowdb21RBU['DECOSUBCODE04']) . "' AND
 a.NAMENAME ='Width' AND
 p.ITEMTYPECODE ='KFF'  ";
-                $stmt8RBU   = db2_prepare_execute($conn1, $sqlDB28RBU);
+                $stmt8RBU   = db2_prepare($conn1, $sqlDB28RBU);
+                db2_execute($stmt8RBU);
                 $rowdb28RBU = db2_fetch_assoc($stmt8RBU);
                 $sqlDB29RBU = " SELECT a.VALUEDECIMAL  FROM PRODUCT p 
 LEFT OUTER JOIN ADSTORAGE a  ON a.UNIQUEID = p.ABSUNIQUEID 
@@ -888,7 +881,8 @@ p.SUBCODE03='" . trim($rowdb21RBU['DECOSUBCODE03']) . "' AND
 p.SUBCODE04='" . trim($rowdb21RBU['DECOSUBCODE04']) . "' AND
 a.NAMENAME ='GSM' AND
 p.ITEMTYPECODE ='KFF'  ";
-                $stmt9RBU   = db2_prepare_execute($conn1, $sqlDB29RBU);
+                $stmt9RBU   = db2_prepare($conn1, $sqlDB29RBU);
+                db2_execute($stmt9RBU);
                 $rowdb29RBU = db2_fetch_assoc($stmt9RBU);
                 if ($rowdb22R1BU['LEGALNAME1'] == "") {
                   $langgananBU = "";
@@ -1037,7 +1031,8 @@ p.ITEMTYPECODE ='KFF'  ";
                           s.DECOSUBCODE03, s.DECOSUBCODE04,
                           s.WHSLOCATIONWAREHOUSEZONECODE,
                           s.WAREHOUSELOCATIONCODE, s.LOTCODE, f.SUMMARIZEDDESCRIPTION, s.CREATIONUSER,a1.VALUESTRING";
-              $stmt1A   = db2_prepare_execute($conn1, $sqlDB21A);
+              $stmt1A   = db2_prepare($conn1, $sqlDB21A);
+              db2_execute($stmt1A);
               //}				  
               while ($rowdb21A = db2_fetch_assoc($stmt1A)) {
                 $itemcA = trim($rowdb21A['DECOSUBCODE02']) . "" . trim($rowdb21A['DECOSUBCODE03']) . " " . trim($rowdb21A['DECOSUBCODE04']);
@@ -1047,7 +1042,8 @@ p.ITEMTYPECODE ='KFF'  ";
                               FROM DB2ADMIN.SALESORDER SALESORDER LEFT OUTER JOIN DB2ADMIN.ITXVIEWAKJ 
                                   ITXVIEWAKJ ON SALESORDER.CODE=ITXVIEWAKJ.CODE
                               WHERE SALESORDER.CODE='" . trim($rowdb21A['PROJECTCODE']) . "' ";
-                $stmt2A1   = db2_prepare_execute($conn1, $sqlDB22A1);
+                $stmt2A1   = db2_prepare($conn1, $sqlDB22A1);
+                db2_execute($stmt2A1);
                 $rowdb22A1 = db2_fetch_assoc($stmt2A1);
 
                 $sqlDB22A = " SELECT LISTAGG(DISTINCT  TRIM(BALANCE.WAREHOUSELOCATIONCODE),', ') AS WAREHOUSELOCATIONCODE, COUNT(BALANCE.BASEPRIMARYQUANTITYUNIT) AS ROL,SUM(BALANCE.BASEPRIMARYQUANTITYUNIT) AS BERAT,BALANCE.LOTCODE  
@@ -1065,7 +1061,8 @@ p.ITEMTYPECODE ='KFF'  ";
                                   ) STOCKTRANSACTION LEFT OUTER JOIN 
                                   DB2ADMIN.BALANCE BALANCE ON BALANCE.ELEMENTSCODE =STOCKTRANSACTION.ITEMELEMENTCODE  
                                   GROUP BY BALANCE.LOTCODE ";
-                $stmt2A   = db2_prepare_execute($conn1, $sqlDB22A);
+                $stmt2A   = db2_prepare($conn1, $sqlDB22A);
+                db2_execute($stmt2A);
                 $rowdb22A = db2_fetch_assoc($stmt2A);
                 $sqlDB23A = " SELECT p.SUBCODE01,p.SUBCODE02,p.SUBCODE03,p.SUBCODE04,p.SUBCODE05,p.SUBCODE06,p.SUBCODE07, p.LONGDESCRIPTION FROM (
                               SELECT p2.ITEMTYPEAFICODE,p2.SUBCODE01,p2.SUBCODE02,p2.SUBCODE03,p2.SUBCODE04,
@@ -1085,7 +1082,8 @@ p.ITEMTYPECODE ='KFF'  ";
                               p.SUBCODE03,p.SUBCODE04,
                               p.SUBCODE05,p.SUBCODE06,
                               p.SUBCODE07,p.LONGDESCRIPTION ";
-                $stmt3A   = db2_prepare_execute($conn1, $sqlDB23A);
+                $stmt3A   = db2_prepare($conn1, $sqlDB23A);
+                db2_execute($stmt3A);
                 $aiA = 0;
                 $aA[0] = "";
                 $aA[1] = "";
@@ -1100,7 +1098,8 @@ p.ITEMTYPECODE ='KFF'  ";
                                 WHERE e.ELEMENTITEMTYPECODE='KGF' AND e.DEMANDCODE='$rowdb21R[LOTCODE]'
 
                                 GROUP BY e.WIDTHGROSS,a.VALUEDECIMAL,e.DEMANDCODE ";
-                                $stmt6R   = db2_prepare_execute($conn1, $sqlDB26R);
+                                $stmt6R   = db2_prepare($conn1, $sqlDB26R);
+                                db2_execute($stmt6R);
                                 $rowdb26R = db2_fetch_assoc($stmt6R);*/
 
                 $sqlDB28A = " SELECT a.VALUEDECIMAL  FROM PRODUCT p 
@@ -1111,7 +1110,8 @@ p.ITEMTYPECODE ='KFF'  ";
                               p.SUBCODE04='" . trim($rowdb21A['DECOSUBCODE04']) . "' AND
                               a.NAMENAME ='Width' AND
                               p.ITEMTYPECODE ='FKF'  ";
-                $stmt8A   = db2_prepare_execute($conn1, $sqlDB28A);
+                $stmt8A   = db2_prepare($conn1, $sqlDB28A);
+                db2_execute($stmt8A);
                 $rowdb28A = db2_fetch_assoc($stmt8A);
                 $sqlDB29A = " SELECT a.VALUEDECIMAL  FROM PRODUCT p 
                               LEFT OUTER JOIN ADSTORAGE a  ON a.UNIQUEID = p.ABSUNIQUEID 
@@ -1121,7 +1121,8 @@ p.ITEMTYPECODE ='KFF'  ";
                               p.SUBCODE04='" . trim($rowdb21A['DECOSUBCODE04']) . "' AND
                               a.NAMENAME ='GSM' AND
                               p.ITEMTYPECODE ='FKF'  ";
-                $stmt9A   = db2_prepare_execute($conn1, $sqlDB29A);
+                $stmt9A   = db2_prepare($conn1, $sqlDB29A);
+                db2_execute($stmt9A);
                 $rowdb29A = db2_fetch_assoc($stmt9A);
                 if ($rowdb22A1['LEGALNAME1'] == "") {
                   $langgananA = "";
@@ -1252,20 +1253,21 @@ p.ITEMTYPECODE ='KFF'  ";
               $c = 0;
 
               $sqlDB21AN = "  SELECT p.PROJECTCODE, p.ORIGDLVSALORDLINESALORDERCODE,s.PRODUCTIONORDERCODE,s.ORDERCODE,f.SUMMARIZEDDESCRIPTION,
-s.TRANSACTIONDATE,s.DECOSUBCODE01,s.DECOSUBCODE02,s.DECOSUBCODE03,
-s.DECOSUBCODE04,s.WHSLOCATIONWAREHOUSEZONECODE,s.WAREHOUSELOCATIONCODE,
-s.LOTCODE,SUM(s.BASEPRIMARYQUANTITY) AS KG, SUM(s.BASESECONDARYQUANTITY) AS PCS, COUNT(s.ITEMELEMENTCODE) AS JML,
-s.CREATIONUSER FROM STOCKTRANSACTION s 
-LEFT OUTER JOIN PRODUCTIONDEMAND p ON p.CODE = s.ORDERCODE 
-LEFT OUTER JOIN FULLITEMKEYDECODER f ON s.FULLITEMIDENTIFIER = f.IDENTIFIER
-WHERE s.TRANSACTIONDATE BETWEEN '$Awal' AND '$Akhir' AND s.ITEMTYPECODE='FKG' AND 
-s.LOGICALWAREHOUSECODE ='M021' AND s.TEMPLATECODE = '110' 
-GROUP BY p.PROJECTCODE,p.ORIGDLVSALORDLINESALORDERCODE,s.PRODUCTIONORDERCODE,s.ORDERCODE,
-s.TRANSACTIONDATE,s.DECOSUBCODE01,s.DECOSUBCODE02,
-s.DECOSUBCODE03, s.DECOSUBCODE04,
-s.WHSLOCATIONWAREHOUSEZONECODE,
-s.WAREHOUSELOCATIONCODE, s.LOTCODE, f.SUMMARIZEDDESCRIPTION, s.CREATIONUSER";
-              $stmt1AN   = db2_prepare_execute($conn1, $sqlDB21AN);
+                              s.TRANSACTIONDATE,s.DECOSUBCODE01,s.DECOSUBCODE02,s.DECOSUBCODE03,
+                              s.DECOSUBCODE04,s.WHSLOCATIONWAREHOUSEZONECODE,s.WAREHOUSELOCATIONCODE,
+                              s.LOTCODE,SUM(s.BASEPRIMARYQUANTITY) AS KG, SUM(s.BASESECONDARYQUANTITY) AS PCS, COUNT(s.ITEMELEMENTCODE) AS JML,
+                              s.CREATIONUSER FROM STOCKTRANSACTION s 
+                              LEFT OUTER JOIN PRODUCTIONDEMAND p ON p.CODE = s.ORDERCODE 
+                              LEFT OUTER JOIN FULLITEMKEYDECODER f ON s.FULLITEMIDENTIFIER = f.IDENTIFIER
+                              WHERE s.TRANSACTIONDATE BETWEEN '$Awal' AND '$Akhir' AND s.ITEMTYPECODE='FKG' AND 
+                              s.LOGICALWAREHOUSECODE ='M021' AND s.TEMPLATECODE = '110' 
+                              GROUP BY p.PROJECTCODE,p.ORIGDLVSALORDLINESALORDERCODE,s.PRODUCTIONORDERCODE,s.ORDERCODE,
+                              s.TRANSACTIONDATE,s.DECOSUBCODE01,s.DECOSUBCODE02,
+                              s.DECOSUBCODE03, s.DECOSUBCODE04,
+                              s.WHSLOCATIONWAREHOUSEZONECODE,
+                              s.WAREHOUSELOCATIONCODE, s.LOTCODE, f.SUMMARIZEDDESCRIPTION, s.CREATIONUSER";
+              $stmt1AN   = db2_prepare($conn1, $sqlDB21AN);
+              db2_execute($stmt1AN);
               //}				  
               while ($rowdb21AN = db2_fetch_assoc($stmt1AN)) {
                 $itemcAN = trim($rowdb21AN['DECOSUBCODE02']) . "" . trim($rowdb21AN['DECOSUBCODE03']) . " " . trim($rowdb21AN['DECOSUBCODE04']);
@@ -1276,49 +1278,52 @@ s.WAREHOUSELOCATIONCODE, s.LOTCODE, f.SUMMARIZEDDESCRIPTION, s.CREATIONUSER";
                 }
 
                 $sqlDB22A1N = " SELECT SALESORDER.CODE, SALESORDER.EXTERNALREFERENCE, SALESORDER.ORDPRNCUSTOMERSUPPLIERCODE,
-		ITXVIEWAKJ.LEGALNAME1, ITXVIEWAKJ.ORDERPARTNERBRANDCODE, ITXVIEWAKJ.LONGDESCRIPTION
-		FROM DB2ADMIN.SALESORDER SALESORDER LEFT OUTER JOIN DB2ADMIN.ITXVIEWAKJ 
-       	ITXVIEWAKJ ON SALESORDER.CODE=ITXVIEWAKJ.CODE
-		WHERE SALESORDER.CODE='" . trim($proj) . "' ";
-                $stmt2A1N   = db2_prepare_execute($conn1, $sqlDB22A1N);
+                                ITXVIEWAKJ.LEGALNAME1, ITXVIEWAKJ.ORDERPARTNERBRANDCODE, ITXVIEWAKJ.LONGDESCRIPTION
+                                FROM DB2ADMIN.SALESORDER SALESORDER LEFT OUTER JOIN DB2ADMIN.ITXVIEWAKJ 
+                                    ITXVIEWAKJ ON SALESORDER.CODE=ITXVIEWAKJ.CODE
+                                WHERE SALESORDER.CODE='" . trim($proj) . "' ";
+                $stmt2A1N   = db2_prepare($conn1, $sqlDB22A1N);
+                db2_execute($stmt2A1N);
                 $rowdb22A1N = db2_fetch_assoc($stmt2A1N);
 
                 $sqlDB22AN = " SELECT LISTAGG(DISTINCT  TRIM(BALANCE.WAREHOUSELOCATIONCODE),', ') AS WAREHOUSELOCATIONCODE, COUNT(BALANCE.BASEPRIMARYQUANTITYUNIT) AS ROL,SUM(BALANCE.BASEPRIMARYQUANTITYUNIT) AS BERAT,BALANCE.LOTCODE  
-		FROM (
-		SELECT 
-s.ITEMELEMENTCODE  FROM STOCKTRANSACTION s 
-LEFT OUTER JOIN ADSTORAGE a ON a.UNIQUEID = s.ABSUNIQUEID AND a.NAMENAME = 'StatusFlatKnitt'
-WHERE s.PROJECTCODE='" . $proj . "' AND s.ITEMTYPECODE='FKG' AND 
-s.DECOSUBCODE02='" . $rowdb21AN['DECOSUBCODE02'] . "' AND s.DECOSUBCODE03='" . $rowdb21AN['DECOSUBCODE03'] . "' AND 
-s.DECOSUBCODE04='" . $rowdb21AN['DECOSUBCODE04'] . "' AND s.LOGICALWAREHOUSECODE ='M021' AND
-s.LOTCODE='$rowdb21AN[LOTCODE]' AND 
-s.TEMPLATECODE = 'OPN' AND a.VALUESTRING =  '1'
-GROUP BY 
-s.ITEMELEMENTCODE
-		) STOCKTRANSACTION LEFT OUTER JOIN 
-		DB2ADMIN.BALANCE BALANCE ON BALANCE.ELEMENTSCODE =STOCKTRANSACTION.ITEMELEMENTCODE  
-		GROUP BY BALANCE.LOTCODE ";
-                $stmt2AN   = db2_prepare_execute($conn1, $sqlDB22AN);
+                                    FROM (
+                                    SELECT 
+                                s.ITEMELEMENTCODE  FROM STOCKTRANSACTION s 
+                                LEFT OUTER JOIN ADSTORAGE a ON a.UNIQUEID = s.ABSUNIQUEID AND a.NAMENAME = 'StatusFlatKnitt'
+                                WHERE s.PROJECTCODE='" . $proj . "' AND s.ITEMTYPECODE='FKG' AND 
+                                s.DECOSUBCODE02='" . $rowdb21AN['DECOSUBCODE02'] . "' AND s.DECOSUBCODE03='" . $rowdb21AN['DECOSUBCODE03'] . "' AND 
+                                s.DECOSUBCODE04='" . $rowdb21AN['DECOSUBCODE04'] . "' AND s.LOGICALWAREHOUSECODE ='M021' AND
+                                s.LOTCODE='$rowdb21AN[LOTCODE]' AND 
+                                s.TEMPLATECODE = 'OPN' AND a.VALUESTRING =  '1'
+                                GROUP BY 
+                                s.ITEMELEMENTCODE
+                                    ) STOCKTRANSACTION LEFT OUTER JOIN 
+                                    DB2ADMIN.BALANCE BALANCE ON BALANCE.ELEMENTSCODE =STOCKTRANSACTION.ITEMELEMENTCODE  
+                                    GROUP BY BALANCE.LOTCODE ";
+                $stmt2AN   = db2_prepare($conn1, $sqlDB22AN);
+                db2_execute($stmt2AN);
                 $rowdb22AN = db2_fetch_assoc($stmt2AN);
                 $sqlDB23AN = " SELECT p.SUBCODE01,p.SUBCODE02,p.SUBCODE03,p.SUBCODE04,p.SUBCODE05,p.SUBCODE06,p.SUBCODE07, p.LONGDESCRIPTION FROM (
-SELECT p2.ITEMTYPEAFICODE,p2.SUBCODE01,p2.SUBCODE02,p2.SUBCODE03,p2.SUBCODE04,
-p2.SUBCODE05,p2.SUBCODE06,p2.SUBCODE07  FROM PRODUCTIONDEMAND p 
-LEFT OUTER JOIN PRODUCTIONRESERVATION p2 ON p.CODE =p2.ORDERCODE 
-WHERE p.ITEMTYPEAFICODE ='KGF' AND p.SUBCODE01='" . trim($rowdb21AN['DECOSUBCODE01']) . "' 
-AND p.SUBCODE02 ='" . trim($rowdb21AN['DECOSUBCODE02']) . "' AND p.SUBCODE03 ='" . trim($rowdb21AN['DECOSUBCODE03']) . "' AND
-p.SUBCODE04='" . trim($rowdb21AN['DECOSUBCODE04']) . "' AND (p.PROJECTCODE ='" . trim($proj) . "' OR p.ORIGDLVSALORDLINESALORDERCODE  ='" . trim($proj) . "')
-) a LEFT OUTER JOIN PRODUCT p ON
-p.ITEMTYPECODE ='GYR' AND
-p.SUBCODE01= a.SUBCODE01 AND p.SUBCODE02= a.SUBCODE02 AND 
-p.SUBCODE03= a.SUBCODE03 AND p.SUBCODE04= a.SUBCODE04 AND 
-p.SUBCODE05= a.SUBCODE05 AND p.SUBCODE06= a.SUBCODE06 AND
-p.SUBCODE07= a.SUBCODE07 
-GROUP BY 
-p.SUBCODE01,p.SUBCODE02, 
-p.SUBCODE03,p.SUBCODE04,
-p.SUBCODE05,p.SUBCODE06,
-p.SUBCODE07,p.LONGDESCRIPTION ";
-                $stmt3AN   = db2_prepare_execute($conn1, $sqlDB23AN);
+                                SELECT p2.ITEMTYPEAFICODE,p2.SUBCODE01,p2.SUBCODE02,p2.SUBCODE03,p2.SUBCODE04,
+                                p2.SUBCODE05,p2.SUBCODE06,p2.SUBCODE07  FROM PRODUCTIONDEMAND p 
+                                LEFT OUTER JOIN PRODUCTIONRESERVATION p2 ON p.CODE =p2.ORDERCODE 
+                                WHERE p.ITEMTYPEAFICODE ='KGF' AND p.SUBCODE01='" . trim($rowdb21AN['DECOSUBCODE01']) . "' 
+                                AND p.SUBCODE02 ='" . trim($rowdb21AN['DECOSUBCODE02']) . "' AND p.SUBCODE03 ='" . trim($rowdb21AN['DECOSUBCODE03']) . "' AND
+                                p.SUBCODE04='" . trim($rowdb21AN['DECOSUBCODE04']) . "' AND (p.PROJECTCODE ='" . trim($proj) . "' OR p.ORIGDLVSALORDLINESALORDERCODE  ='" . trim($proj) . "')
+                                ) a LEFT OUTER JOIN PRODUCT p ON
+                                p.ITEMTYPECODE ='GYR' AND
+                                p.SUBCODE01= a.SUBCODE01 AND p.SUBCODE02= a.SUBCODE02 AND 
+                                p.SUBCODE03= a.SUBCODE03 AND p.SUBCODE04= a.SUBCODE04 AND 
+                                p.SUBCODE05= a.SUBCODE05 AND p.SUBCODE06= a.SUBCODE06 AND
+                                p.SUBCODE07= a.SUBCODE07 
+                                GROUP BY 
+                                p.SUBCODE01,p.SUBCODE02, 
+                                p.SUBCODE03,p.SUBCODE04,
+                                p.SUBCODE05,p.SUBCODE06,
+                                p.SUBCODE07,p.LONGDESCRIPTION ";
+                $stmt3AN   = db2_prepare($conn1, $sqlDB23AN);
+                db2_execute($stmt3AN);
                 $aiAN = 0;
                 $aAN[0] = "";
                 $aAN[1] = "";
@@ -1329,31 +1334,34 @@ p.SUBCODE07,p.LONGDESCRIPTION ";
                   $aiAN++;
                 }
                 /*$sqlDB26R = " SELECT e.WIDTHGROSS AS LEBAR1,a.VALUEDECIMAL AS GSM1, e.DEMANDCODE  FROM ELEMENTSINSPECTION e 
-LEFT OUTER JOIN ADSTORAGE a ON a.UNIQUEID =e.ABSUNIQUEID AND a.NAMENAME ='GSM'
-WHERE e.ELEMENTITEMTYPECODE='KGF' AND e.DEMANDCODE='$rowdb21R[LOTCODE]'
-GROUP BY e.WIDTHGROSS,a.VALUEDECIMAL,e.DEMANDCODE ";
-$stmt6R   = db2_prepare_execute($conn1, $sqlDB26R);
-$rowdb26R = db2_fetch_assoc($stmt6R);*/
+                              LEFT OUTER JOIN ADSTORAGE a ON a.UNIQUEID =e.ABSUNIQUEID AND a.NAMENAME ='GSM'
+                              WHERE e.ELEMENTITEMTYPECODE='KGF' AND e.DEMANDCODE='$rowdb21R[LOTCODE]'
+                              GROUP BY e.WIDTHGROSS,a.VALUEDECIMAL,e.DEMANDCODE ";
+                              $stmt6R   = db2_prepare($conn1, $sqlDB26R);
+                              db2_execute($stmt6R);
+                              $rowdb26R = db2_fetch_assoc($stmt6R);*/
 
                 $sqlDB28AN = " SELECT a.VALUEDECIMAL  FROM PRODUCT p 
-LEFT OUTER JOIN ADSTORAGE a  ON a.UNIQUEID = p.ABSUNIQUEID 
-WHERE p.SUBCODE01='" . trim($rowdb21AN['DECOSUBCODE01']) . "' AND
-p.SUBCODE02='" . trim($rowdb21AN['DECOSUBCODE02']) . "' AND
-p.SUBCODE03='" . trim($rowdb21AN['DECOSUBCODE03']) . "' AND
-p.SUBCODE04='" . trim($rowdb21AN['DECOSUBCODE04']) . "' AND
-a.NAMENAME ='Width' AND
-p.ITEMTYPECODE ='FKF'  ";
-                $stmt8AN   = db2_prepare_execute($conn1, $sqlDB28AN);
+                              LEFT OUTER JOIN ADSTORAGE a  ON a.UNIQUEID = p.ABSUNIQUEID 
+                              WHERE p.SUBCODE01='" . trim($rowdb21AN['DECOSUBCODE01']) . "' AND
+                              p.SUBCODE02='" . trim($rowdb21AN['DECOSUBCODE02']) . "' AND
+                              p.SUBCODE03='" . trim($rowdb21AN['DECOSUBCODE03']) . "' AND
+                              p.SUBCODE04='" . trim($rowdb21AN['DECOSUBCODE04']) . "' AND
+                              a.NAMENAME ='Width' AND
+                              p.ITEMTYPECODE ='FKF'  ";
+                $stmt8AN   = db2_prepare($conn1, $sqlDB28AN);
+                db2_execute($stmt8AN);
                 $rowdb28AN = db2_fetch_assoc($stmt8AN);
                 $sqlDB29AN = " SELECT a.VALUEDECIMAL  FROM PRODUCT p 
-LEFT OUTER JOIN ADSTORAGE a  ON a.UNIQUEID = p.ABSUNIQUEID 
-WHERE p.SUBCODE01='" . trim($rowdb21AN['DECOSUBCODE01']) . "' AND
-p.SUBCODE02='" . trim($rowdb21AN['DECOSUBCODE02']) . "' AND
-p.SUBCODE03='" . trim($rowdb21AN['DECOSUBCODE03']) . "' AND
-p.SUBCODE04='" . trim($rowdb21AN['DECOSUBCODE04']) . "' AND
-a.NAMENAME ='GSM' AND
-p.ITEMTYPECODE ='FKF'  ";
-                $stmt9AN   = db2_prepare_execute($conn1, $sqlDB29AN);
+                              LEFT OUTER JOIN ADSTORAGE a  ON a.UNIQUEID = p.ABSUNIQUEID 
+                              WHERE p.SUBCODE01='" . trim($rowdb21AN['DECOSUBCODE01']) . "' AND
+                              p.SUBCODE02='" . trim($rowdb21AN['DECOSUBCODE02']) . "' AND
+                              p.SUBCODE03='" . trim($rowdb21AN['DECOSUBCODE03']) . "' AND
+                              p.SUBCODE04='" . trim($rowdb21AN['DECOSUBCODE04']) . "' AND
+                              a.NAMENAME ='GSM' AND
+                              p.ITEMTYPECODE ='FKF'  ";
+                $stmt9AN   = db2_prepare($conn1, $sqlDB29AN);
+                db2_execute($stmt9AN);
                 $rowdb29AN = db2_fetch_assoc($stmt9AN);
                 if ($rowdb22A1N['LEGALNAME1'] == "") {
                   $langgananAN = "";
@@ -1476,4 +1484,46 @@ p.ITEMTYPECODE ='FKF'  ";
     }
   }
 </script>
+<script>
+  // Load status element via AJAX (lazy)
+  $(function() {
+    var badges = $('.status-lazy');
+    if (!badges.length) return;
+    var payload = [];
+    badges.each(function() {
+      var ord = $(this).data('ord');
+      var line = $(this).data('line');
+      if (ord && line) {
+        payload.push({ ord: ord, line: line });
+      }
+    });
+    $.ajax({
+      url: 'pages/api/status_greige.php',
+      method: 'POST',
+      data: JSON.stringify({ items: payload }),
+      contentType: 'application/json',
+      success: function(resp) {
+        if (!resp || !resp.data) return;
+        badges.each(function() {
+          var $b = $(this);
+          var key = ($b.data('ord') || '') + '|' + ($b.data('line') || '');
+          var st = resp.data[key];
+          if (!st) {
+            $b.text('OK').removeClass('badge-secondary').addClass('badge-success');
+            return;
+          }
+          if (st.missing > 0) {
+            $b.html('NOT OK (' + st.missing + ')').removeClass('badge-secondary').addClass('badge-danger');
+          } else {
+            $b.text('OK').removeClass('badge-secondary').addClass('badge-success');
+          }
+        });
+      },
+      error: function() {
+        badges.text('OK').removeClass('badge-secondary').addClass('badge-success');
+      }
+    });
+  });
+</script>
+
 

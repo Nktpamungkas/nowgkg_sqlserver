@@ -310,7 +310,7 @@ if (file_exists($files)) {
       "searching": true,
       "ordering": true,
       "info": true,
-      "responsive": false,
+      "responsive": true,
 	  "scrollX": true,
       "scrollY": '150px',
 	  "buttons": ["copy", "excel", "pdf", "print", "colvis"]

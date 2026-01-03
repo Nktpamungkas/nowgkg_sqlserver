@@ -384,7 +384,7 @@ function cacheResult($key, array &$store, callable $resolver)
 
                 // Cek status element sekali saja (agregat) untuk kurangi query
                 // Status element akan di-load via AJAX (default kosong)
-                $stts = "<small class='badge badge-secondary status-lazy' data-ord='" . htmlspecialchars(trim($rowdb21['PROVISIONALCODE'])) . "' data-line='" . htmlspecialchars(trim($rowdb21['ORDERLINE'])) . "'>...</small>";
+                $stts = "<small class='status-lazy' data-ord='" . htmlspecialchars(trim($rowdb21['PROVISIONALCODE'])) . "' data-line='" . htmlspecialchars(trim($rowdb21['ORDERLINE'])) . "'></small>";
               ?>
                 <tr>
                   <td style="text-align: center"><?php echo $no; ?></td>
@@ -440,9 +440,6 @@ function cacheResult($key, array &$store, callable $resolver)
                   <td style="text-align: center">
                     <?php if (!empty($rowdb24['WAREHOUSELOCATIONCODE'])) {
                       echo $stts;
-                      if (!empty($user)) {
-                        echo ' <small>(' . htmlspecialchars($user, ENT_QUOTES, 'UTF-8') . ')</small>';
-                      }
                     } ?>
                   </td>
                 </tr>
@@ -1509,14 +1506,18 @@ p.ITEMTYPECODE ='KFF'  ";
           var $b = $(this);
           var key = ($b.data('ord') || '') + '|' + ($b.data('line') || '');
           var st = resp.data[key];
-          if (!st) {
-            $b.text('OK').removeClass('badge-secondary').addClass('badge-success');
-            return;
+          let usr='';
+          if (st.user!=null){
+              usr=" ("+st.user+")";
           }
-          if (st.missing > 0) {
-            $b.html('NOT OK (' + st.missing + ')').removeClass('badge-secondary').addClass('badge-danger');
-          } else {
-            $b.text('OK').removeClass('badge-secondary').addClass('badge-success');
+          if (!st) {
+            $b.append("<span class='badge badge-success'>OK</span> "+usr);
+          }else{
+            if (st.missing > 0) {
+              $b.append("<span class='badge badge-danger'>NOT OK (" + st.missing + ")</span> "+usr);
+            } else {
+              $b.append("<span class='badge badge-success'>OK</span> "+usr);
+            }
           }
           counter++;
           if(counter>=badges.length){

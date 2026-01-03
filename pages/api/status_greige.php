@@ -75,7 +75,7 @@ while ($r = db2_fetch_assoc($stmt)) {
     $result[$key] = [
         'balance' => (int)$r['CNT_BALANCE'],
         'missing' => (int)$r['CNT_MISS302'],
-        'user' => $r['LAST_USER'],
+        'user' => trim($r['LAST_USER']),
     ];
 }
 

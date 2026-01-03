@@ -1504,6 +1504,7 @@ p.ITEMTYPECODE ='KFF'  ";
       contentType: 'application/json',
       success: function(resp) {
         if (!resp || !resp.data) return;
+        let counter=0;
         badges.each(function() {
           var $b = $(this);
           var key = ($b.data('ord') || '') + '|' + ($b.data('line') || '');
@@ -1516,6 +1517,22 @@ p.ITEMTYPECODE ='KFF'  ";
             $b.html('NOT OK (' + st.missing + ')').removeClass('badge-secondary').addClass('badge-danger');
           } else {
             $b.text('OK').removeClass('badge-secondary').addClass('badge-success');
+          }
+          counter++;
+          if(counter>=badges.length){
+            if ($.fn.DataTable.isDataTable('#example14')) {
+                $('#example14').DataTable().destroy();
+            }
+            $('#example14').DataTable({
+              "paging": false,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "responsive": true,
+              "scrollX": true,
+                "scrollY": '150px',
+              "buttons": ["copy", "excel", "pdf", "print", "colvis"]
+              }).buttons().container().appendTo('#example14_wrapper .col-md-6:eq(0)');
           }
         });
       },

@@ -8,7 +8,7 @@ if ($HangerNO !== '' && preg_match('/^([A-Z0-9]{2,3})([A-Z0-9]*?)(\d+)\s+([A-Z0-
   $subC2 = $m[3]; // angka
   $subC3 = $m[4]; // kode terakhir
 }
-echo "$Project - $HangerNO - $subC1 - $subC2 - $subC3";
+// echo "$Project - $HangerNO - $subC1 - $subC2 - $subC3";
 
 $sqlDB2 = " SELECT
   *

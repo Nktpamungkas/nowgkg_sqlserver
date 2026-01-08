@@ -1,9 +1,18 @@
 <?php
 $Project	= isset($_POST['projectcode']) ? $_POST['projectcode'] : '';
 $HangerNO	= isset($_POST['hangerno']) ? $_POST['hangerno'] : '';
-$subC1		= substr($HangerNO, 0, 2);
-$subC2		= substr($HangerNO, 2, 5);
-$subC3		= substr($HangerNO, 8, 3);
+// $subC1		= substr($HangerNO, 0, 2);
+// $subC2		= substr($HangerNO, 2, 5);
+// $subC3		= substr($HangerNO, 8, 3);
+$subC1 = $subC2 = $subC3 = '';
+
+if ($HangerNO !== '' && preg_match('/^([A-Z]{2,3})(\d+)\s+([A-Z0-9]{3})$/', strtoupper($HangerNO), $m)) {
+    $subC1 = $m[1]; // SUBCODE02
+    $subC2 = $m[2]; // SUBCODE03
+    $subC3 = $m[3]; // SUBCODE04
+}
+
+// echo "$Project - $HangerNO - $subC1 - $subC2 - $subC3";
 
 $sqlDB2 = " SELECT * FROM 
 (SELECT CASE WHEN PROJECTCODE <> '' THEN PROJECTCODE ELSE ORIGDLVSALORDLINESALORDERCODE  END  AS PROJECT,

@@ -1,9 +1,14 @@
 <?php
 $Project  = isset($_POST['projectcode']) ? $_POST['projectcode'] : '';
 $HangerNO  = isset($_POST['hangerno']) ? $_POST['hangerno'] : '';
-$subC1    = substr($HangerNO, 0, 2);
-$subC2    = substr($HangerNO, 2, 5);
-$subC3    = substr($HangerNO, 8, 3);
+$subC1 = $subC2 = $subC3 = '';
+
+if ($HangerNO !== '' && preg_match('/^([A-Z0-9]{2,3})([A-Z0-9]*?)(\d+)\s+([A-Z0-9]{3})$/', strtoupper($HangerNO), $m)) {
+  $subC1 = $m[1]; // 2 atau 3 karakter pertama
+  $subC2 = $m[3]; // angka
+  $subC3 = $m[4]; // kode terakhir
+}
+echo "$Project - $HangerNO - $subC1 - $subC2 - $subC3";
 
 $sqlDB2 = " SELECT
   *

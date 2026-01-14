@@ -77,7 +77,8 @@ GROUP BY
 	STOCKTRANSACTION.ITEMELEMENTCODE,
   a.VALUESTRING
 LIMIT 1 ";
-$stmt   = db2_exec($conn1,$sqlDB2, array('cursor'=>DB2_SCROLLABLE));
+$stmt   = db2_prepare($conn1,$sqlDB2);
+db2_execute($stmt);
 $rowdb2 = db2_fetch_assoc($stmt);
 $itemKFF= trim($rowdb2['SUBCODE01'])."-".trim($rowdb2['SUBCODE02'])."-".trim($rowdb2['SUBCODE03'])."-".trim($rowdb2['SUBCODE04'])."-".trim($rowdb2['SUBCODE05'])."-".trim($rowdb2['SUBCODE06'])."-".trim($rowdb2['SUBCODE07'])."-".trim($rowdb2['SUBCODE08']);
 $sqlBK="SELECT
@@ -94,13 +95,15 @@ WHERE
 	AND PRODUCTIONRESERVATION.PRODUCTIONORDERCODE='".$rowdb2['PRODUCTIONORDERCODE']."'	
 GROUP BY
     PRODUCTIONRESERVATION.PRODUCTIONORDERCODE";	
-      $stmt1   = db2_exec($conn1,$sqlBK, array('cursor'=>DB2_SCROLLABLE));	
+      $stmt1   = db2_prepare($conn1,$sqlBK);	
+	  			db2_execute($stmt1);
       $rowBK = db2_fetch_assoc($stmt1);
 $sqlPrj="
 SELECT PRODUCTIONDEMAND.ORIGDLVSALORDLINESALORDERCODE 
 FROM DB2ADMIN.PRODUCTIONDEMAND PRODUCTIONDEMAND 
 WHERE  PRODUCTIONDEMAND.CODE='".$rowdb2['DEMAND_KGF']."'";
-	  $stmtPrj   = db2_exec($conn1,$sqlPrj, array('cursor'=>DB2_SCROLLABLE));	
+	  $stmtPrj   = db2_prepare($conn1,$sqlPrj);
+				db2_execute($stmtPrj);
       $rowPrj   = db2_fetch_assoc($stmtPrj);
 
 $sqlPrj1="SELECT
@@ -111,7 +114,8 @@ WHERE
 	TEMPLATECODE = '204'
 	AND ITEMELEMENTCODE = '".$rowdb2['ITEMELEMENTCODE']."'
 	AND LOGICALWAREHOUSECODE = 'M021'";
-	  $stmtPrj1   = db2_exec($conn1,$sqlPrj1, array('cursor'=>DB2_SCROLLABLE));	
+	  $stmtPrj1   = db2_prepare($conn1,$sqlPrj1);	
+				db2_execute($stmtPrj1);
       $rowPrj1   = db2_fetch_assoc($stmtPrj1);
 
 $sqlPrj2="SELECT
@@ -129,7 +133,8 @@ FROM
 	GROUP BY
 		PROJECTCODE) a
 ";
-	  $stmtPrj2   = db2_exec($conn1,$sqlPrj2, array('cursor'=>DB2_SCROLLABLE));	
+	  $stmtPrj2   = db2_prepare($conn1,$sqlPrj2);
+				db2_execute($stmtPrj2);
       $rowPrj2   = db2_fetch_assoc($stmtPrj2);
 
 $sqlTGLBG="
@@ -144,7 +149,8 @@ WHERE
 GROUP BY
     STOCKTRANSACTION.TRANSACTIONDATE,
     STOCKTRANSACTION.ORDERCODE";
-	  $stmtBG   = db2_exec($conn1,$sqlTGLBG, array('cursor'=>DB2_SCROLLABLE));	
+	  $stmtBG   = db2_prepare($conn1,$sqlTGLBG);	
+				db2_execute($stmtBG);
       $rowBG   = db2_fetch_assoc($stmtBG);
 
 //$sqlLG="
@@ -158,7 +164,8 @@ GROUP BY
 //    a.UNIQUEID = e.ABSUNIQUEID
 //    AND a.NAMENAME = 'GSM'
 //WHERE e.ELEMENTCODE LIKE '$rowdb2[DEMAND_KGF]%' LIMIT 1	";
-//	  $stmtLG   = db2_exec($conn1,$sqlLG, array('cursor'=>DB2_SCROLLABLE));	
+//	  $stmtLG   = db2_prepare($conn1,$sqlLG);
+// db2_execute($stmtLG);
 //      $rowLG   = db2_fetch_assoc($stmtLG);
 $sqlLG="SELECT LISTAGG(TRIM(GSM),
     ', ') AS LG1,LISTAGG(TRIM(MESIN_KNT),
@@ -189,7 +196,8 @@ WHERE
     s.ORDERCODE = '".$rowdb2['PRODUCTIONORDERCODE']."'
 	AND SUBSTR(s.ITEMELEMENTCODE, 1, 1) = '0')
 ";
-	  $stmtLG   = db2_exec($conn1,$sqlLG, array('cursor'=>DB2_SCROLLABLE));	
+	  $stmtLG   = db2_prepare($conn1,$sqlLG);
+				db2_execute($stmtLG);
       $rowLG   = db2_fetch_assoc($stmtLG);
 $sqlDBLBNG = " SELECT
     STOCKTRANSACTION.PROJECTCODE,
@@ -230,7 +238,8 @@ GROUP BY
     STOCKTRANSACTION.DECOSUBCODE03,
     STOCKTRANSACTION.DECOSUBCODE04
 ";
-$stmtLBNG   = db2_exec($conn1,$sqlDBLBNG, array('cursor'=>DB2_SCROLLABLE));					  
+$stmtLBNG   = db2_prepare($conn1,$sqlDBLBNG);
+db2_execute($stmtLBNG);
 $rowdbLBNG  = db2_fetch_assoc($stmtLBNG);
 $sqlDB25 = " 
 SELECT ad.VALUESTRING AS NO_MESIN
@@ -239,7 +248,8 @@ LEFT OUTER JOIN ADSTORAGE ad ON ad.UNIQUEID = pd.ABSUNIQUEID AND ad.NAMENAME ='M
 WHERE  pd.CODE ='$rowdb2[DEMAND_KGF]'
 GROUP BY ad.VALUESTRING
 ";
-$stmt5   = db2_exec($conn1,$sqlDB25, array('cursor'=>DB2_SCROLLABLE));					  
+$stmt5   = db2_prepare($conn1,$sqlDB25);
+db2_execute($stmt5);
 $rowdb25 = db2_fetch_assoc($stmt5);
 
 $sqlDB26 = " SELECT
@@ -279,7 +289,8 @@ GROUP BY
     STOCKTRANSACTION.DECOSUBCODE03,
     STOCKTRANSACTION.DECOSUBCODE04
 ";
-$stmt6   = db2_exec($conn1,$sqlDB26, array('cursor'=>DB2_SCROLLABLE));					  
+$stmt6   = db2_prepare($conn1,$sqlDB26);	
+db2_execute($stmt6);
 $rowdb26 = db2_fetch_assoc($stmt6);
 $itemKGF= trim($rowdb26['DECOSUBCODE01'])."-".trim($rowdb26['DECOSUBCODE02'])."-".trim($rowdb26['DECOSUBCODE03'])."-".trim($rowdb26['DECOSUBCODE04']);
 $sqlDB27 = " SELECT i.WARNA FROM (SELECT
@@ -399,7 +410,8 @@ i.SUBCODE06 = '".$rowdb2['SUBCODE06']."' AND
 i.SUBCODE07 = '".$rowdb2['SUBCODE07']."' AND
 i.SUBCODE08 = '".$rowdb2['SUBCODE08']."'     
 ";
-$stmt7   = db2_exec($conn1,$sqlDB27, array('cursor'=>DB2_SCROLLABLE));					  
+$stmt7   = db2_prepare($conn1,$sqlDB27);
+db2_execute($stmt7);
 $rowdb27 = db2_fetch_assoc($stmt7);
 
 
@@ -583,8 +595,13 @@ GROUP BY
     STOCKTRANSACTION.DECOSUBCODE02,
     STOCKTRANSACTION.DECOSUBCODE03,
     STOCKTRANSACTION.DECOSUBCODE04";
-	$stmtC   = db2_exec($conn1,$sqlC, array('cursor'=>DB2_SCROLLABLE));	
-	$jml = db2_num_rows($stmtC);
+	$stmtC   = db2_prepare($conn1,$sqlC);	
+	db2_execute($stmtC);
+	$jml = 0;
+	while ($rowBTS = db2_fetch_assoc($stmtC)) {
+		$jml++;
+	}
+	//$jml = db2_num_rows($stmtC);
 $batas=ceil($jml/3);
 $lawal=$batas*1-$batas;
 $ltgh=$batas*2-$batas;
@@ -676,7 +693,8 @@ GROUP BY
     STOCKTRANSACTION.DECOSUBCODE03,
     STOCKTRANSACTION.DECOSUBCODE04
 	LIMIT $lawal,$batas";
-	$stmtC1   = db2_exec($conn1,$sqlC1, array('cursor'=>DB2_SCROLLABLE));
+	$stmtC1   = db2_prepare($conn1,$sqlC1);
+			  db2_execute($stmtC1);
 	//}				  
     while($rowC1 = db2_fetch_assoc($stmtC1)){	
       $project1 = "SELECT
@@ -688,7 +706,8 @@ GROUP BY
                     AND LOGICALWAREHOUSECODE = 'M021'
                   ORDER BY (TRANSACTIONDATE || ' ' || TRANSACTIONTIME) DESC
                   LIMIT 1";
-      $stmtPrj1 = db2_exec($conn1,$project1, array('cursor'=>DB2_SCROLLABLE));
+      $stmtPrj1 = db2_prepare($conn1,$project1);
+				db2_execute($stmtPrj1);
       $rowPrj1 = db2_fetch_assoc($stmtPrj1);
                   ?>  
             <tr>
@@ -804,7 +823,8 @@ GROUP BY
     STOCKTRANSACTION.DECOSUBCODE03,
     STOCKTRANSACTION.DECOSUBCODE04
 	LIMIT $ltgh,$batas";
-	$stmtC2   = db2_exec($conn1,$sqlC2, array('cursor'=>DB2_SCROLLABLE));
+	$stmtC2   = db2_prepare($conn1,$sqlC2);
+			  db2_execute($stmtC2);
 	//}				  
     while($rowC2 = db2_fetch_assoc($stmtC2)){	
       $project2 = "SELECT
@@ -816,7 +836,8 @@ GROUP BY
                     AND LOGICALWAREHOUSECODE = 'M021'
                   ORDER BY (TRANSACTIONDATE || ' ' || TRANSACTIONTIME) DESC
                   LIMIT 1";
-      $stmtPrj2 = db2_exec($conn1,$project2, array('cursor'=>DB2_SCROLLABLE));
+      $stmtPrj2 = db2_prepare($conn1,$project2);
+		db2_execute($stmtPrj2);
       $rowPrj2 = db2_fetch_assoc($stmtPrj2);
       ?>
             <tr>
@@ -933,7 +954,8 @@ GROUP BY
     STOCKTRANSACTION.DECOSUBCODE03,
     STOCKTRANSACTION.DECOSUBCODE04
 	LIMIT $lakhr,$batas";
-	$stmtC3   = db2_exec($conn1,$sqlC3, array('cursor'=>DB2_SCROLLABLE));
+	$stmtC3   = db2_prepare($conn1,$sqlC3);
+			  db2_execute($stmtC3);
 	//}				  
     while($rowC3 = db2_fetch_assoc($stmtC3)){	
       $project3 = "SELECT
@@ -945,8 +967,10 @@ GROUP BY
                     AND LOGICALWAREHOUSECODE = 'M021'
                   ORDER BY (TRANSACTIONDATE || ' ' || TRANSACTIONTIME) DESC
                   LIMIT 1";
-      $stmtPrj3 = db2_exec($conn1,$project3, array('cursor'=>DB2_SCROLLABLE));
-      $rowPrj3 = db2_fetch_assoc($stmtPrj3);?>
+      $stmtPrj3 = db2_prepare($conn1,$project3);
+		db2_execute($stmtPrj3);
+      $rowPrj3 = db2_fetch_assoc($stmtPrj3);
+			  ?>
             <tr>
               <td align="center" style="border-bottom:1px #000000 solid;
             border-top:1px #000000 solid;

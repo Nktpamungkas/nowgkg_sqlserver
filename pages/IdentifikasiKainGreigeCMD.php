@@ -3,10 +3,12 @@ $Project  = isset($_POST['projectcode']) ? $_POST['projectcode'] : '';
 $HangerNO  = isset($_POST['hangerno']) ? $_POST['hangerno'] : '';
 $subC1 = $subC2 = $subC3 = '';
 
-if ($HangerNO !== '' && preg_match('/^([A-Z0-9]{2,3})([A-Z0-9]*?)(\d+)\s+([A-Z0-9]{3})$/', strtoupper($HangerNO), $m)) {
-  $subC1 = $m[1]; // 2 atau 3 karakter pertama
-  $subC2 = $m[3]; // angka
-  $subC3 = $m[4]; // kode terakhir
+if (!empty($HangerNO)) {
+    $parts = explode('-', $HangerNO);
+
+    $subC1 = $parts[0] ?? null; // BS
+    $subC2 = $parts[1] ?? null; // 00000
+    $subC3 = $parts[2] ?? null; // XXX
 }
 // echo "$Project - $HangerNO - $subC1 - $subC2 - $subC3";
 
@@ -22,6 +24,7 @@ FROM
       SUBCODE02,
       SUBCODE03,
       SUBCODE04,
+      TRIM(SUBCODE02)||'-'||TRIM(SUBCODE03)||'-'||TRIM(SUBCODE04) AS ITEMCODE_FILTER,
       SUM(BASEPRIMARYQUANTITY) AS BASEPRIMARYQUANTITY,
       CURRENT_TIMESTAMP AS TGLS
     FROM
@@ -111,7 +114,7 @@ $rowdb210 = db2_fetch_assoc($stmt10);
             <select name="hangerno" class="form-control form-control-sm" autocomplete="off">
               <option value="">Pilih</option>
               <?php while ($rowdb2 = db2_fetch_assoc($stmt)) { ?>
-                <option value="<?php echo trim($rowdb2['SUBCODE02']) . trim($rowdb2['SUBCODE03']) . " " . trim($rowdb2['SUBCODE04']); ?>" <?php if ($HangerNO == trim($rowdb2['SUBCODE02']) . trim($rowdb2['SUBCODE03']) . " " . trim($rowdb2['SUBCODE04'])) {
+                <option value="<?php echo trim($rowdb2['ITEMCODE_FILTER']); ?>" <?php if ($HangerNO == trim($rowdb2['ITEMCODE_FILTER'])) {
                                                                                                                                       echo "SELECTED";
                                                                                                                                     } ?>><?php echo trim($rowdb2['SUBCODE02']) . trim($rowdb2['SUBCODE03']) . " " . trim($rowdb2['SUBCODE04']); ?></option>
               <?php } ?>

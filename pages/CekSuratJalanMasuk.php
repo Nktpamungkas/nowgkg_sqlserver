@@ -91,7 +91,8 @@ $sqlDB21 = " SELECT
     MAX(DATA_SURAT_JALAN_MASUK.SUMMARIZEDDESCRIPTION) AS SUMMARIZEDDESCRIPTION,
     SUM(DATA_SURAT_JALAN_MASUK.QTY_KG) AS QTY_KG,
     SUM(DATA_SURAT_JALAN_MASUK.QTY_YD) AS QTY_YD,
-    SUM(DATA_SURAT_JALAN_MASUK.ROL) AS ROL
+    SUM(DATA_SURAT_JALAN_MASUK.ROL) AS ROL,
+	DATA_SURAT_JALAN_MASUK.INTERNALREFERENCEDATE 
 FROM (
     SELECT
         STOCKTRANSACTION.ORDERCODE,
@@ -145,7 +146,8 @@ GROUP BY
 	DATA_SURAT_JALAN_MASUK.INTERNALREFERENCEDATE
 ";
 
-$stmt1 = db2_exec($conn1, $sqlDB21, array('cursor' => DB2_SCROLLABLE));
+$stmt1 = db2_prepare($conn1, $sqlDB21);
+db2_execute($stmt1);			  
 //}
 $knitt = "";
 
@@ -174,10 +176,14 @@ while ($rowdb21 = db2_fetch_assoc($stmt1)) {
       STOCKTRANSACTION.LOGICALWAREHOUSECODE,
       STOCKTRANSACTION.WHSLOCATIONWAREHOUSEZONECODE,
       STOCKTRANSACTION.WAREHOUSELOCATIONCODE,
-      FULLITEMKEYDECODER.SUMMARIZEDDESCRIPTION
+      FULLITEMKEYDECODER.SUMMARIZEDDESCRIPTION,
+	  INTERNALDOCUMENTLINE.INTERNALREFERENCEDATE
       FROM DB2ADMIN.STOCKTRANSACTION STOCKTRANSACTION
       LEFT OUTER JOIN DB2ADMIN.FULLITEMKEYDECODER FULLITEMKEYDECODER ON
       STOCKTRANSACTION.FULLITEMIDENTIFIER = FULLITEMKEYDECODER.IDENTIFIER
+	  LEFT OUTER JOIN DB2ADMIN.INTERNALDOCUMENTLINE INTERNALDOCUMENTLINE ON
+		INTERNALDOCUMENTLINE.INTDOCUMENTPROVISIONALCODE = STOCKTRANSACTION.ORDERCODE AND
+		INTERNALDOCUMENTLINE.ORDERLINE = STOCKTRANSACTION.ORDERLINE	
       WHERE STOCKTRANSACTION.LOGICALWAREHOUSECODE ='M502' AND
       STOCKTRANSACTION.ORDERCODE='$NoBon' AND STOCKTRANSACTION.ORDERLINE='$NoLine'
       GROUP BY
@@ -194,15 +200,16 @@ while ($rowdb21 = db2_fetch_assoc($stmt1)) {
       STOCKTRANSACTION.LOGICALWAREHOUSECODE,
       STOCKTRANSACTION.WHSLOCATIONWAREHOUSEZONECODE,
       STOCKTRANSACTION.WAREHOUSELOCATIONCODE,
-      FULLITEMKEYDECODER.SUMMARIZEDDESCRIPTION
+      FULLITEMKEYDECODER.SUMMARIZEDDESCRIPTION,
+	  INTERNALDOCUMENTLINE.INTERNALREFERENCEDATE
       ";
 
-    $stmtDetail = db2_exec($conn1, $sqlDetail, ['cursor' => DB2_SCROLLABLE]);
-
+    $stmtDetail = db2_prepare($conn1, $sqlDetail, ['cursor' => DB2_SCROLLABLE]);
+	db2_execute($stmtDetail);
     if ($stmtDetail) {
         while ($row = db2_fetch_assoc($stmtDetail)) {
             $itemElementCodes[] = $row['ITEMELEMENTCODE'];
-            $tanggalKNT = $row['TRANSACTIONDATE'];
+            $tanggalKNT = $row['INTERNALREFERENCEDATE'];
 
             $sqlCekCount = "SELECT STOCKTRANSACTION.TRANSACTIONDATE,STOCKTRANSACTION.LOGICALWAREHOUSECODE,
             STOCKTRANSACTION.ITEMELEMENTCODE,STOCKTRANSACTION.BASESECONDARYQUANTITY,
@@ -213,7 +220,8 @@ while ($rowdb21 = db2_fetch_assoc($stmt1)) {
             STOCKTRANSACTION.TEMPLATECODE ='204' AND
             STOCKTRANSACTION.ITEMELEMENTCODE='$row[ITEMELEMENTCODE]'";
 
-            $stmtCekCount = db2_exec($conn1, $sqlCekCount, array('cursor' => DB2_SCROLLABLE));
+            $stmtCekCount = db2_prepare($conn1, $sqlCekCount);
+			db2_execute($stmtCekCount);
             $dataCekCount = db2_fetch_assoc($stmtCekCount);
 
             $tanggalGKG = $dataCekCount['TRANSACTIONDATE'];
@@ -237,7 +245,8 @@ while ($rowdb21 = db2_fetch_assoc($stmt1)) {
     AND STOCKTRANSACTION.TEMPLATECODE = '204'
     AND STOCKTRANSACTION.ITEMELEMENTCODE IN ($itemElementCodesList)";
 
-    $stmt2 = db2_exec($conn1, $sqlDB22, array('cursor' => DB2_SCROLLABLE));
+    $stmt2 = db2_prepare($conn1, $sqlDB22);
+	db2_execute($stmt2);
     $rD = db2_fetch_assoc($stmt2);
 
     $sqlDB23 = "SELECT
@@ -247,7 +256,8 @@ while ($rowdb21 = db2_fetch_assoc($stmt1)) {
 		WHERE BALANCE.LOGICALWAREHOUSECODE='M021'
     AND BALANCE.ELEMENTSCODE IN ($itemElementCodesList)";
 
-    $stmt3 = db2_exec($conn1, $sqlDB23, array('cursor' => DB2_SCROLLABLE));
+    $stmt3 = db2_prepare($conn1, $sqlDB23);
+	db2_execute($stmt3);
     $rD1 = db2_fetch_assoc($stmt3);
 
     $sqlDB24 = "SELECT
@@ -261,7 +271,8 @@ while ($rowdb21 = db2_fetch_assoc($stmt1)) {
     AND
     BALANCE.ELEMENTSCODE IN ($itemElementCodesList)";
 
-    $stmt4 = db2_exec($conn1, $sqlDB24, array('cursor' => DB2_SCROLLABLE));
+    $stmt4 = db2_prepare($conn1, $sqlDB24);
+	db2_execute($stmt4);
     $rD2 = db2_fetch_assoc($stmt4);
 
     $stts = "";
@@ -290,7 +301,7 @@ while ($rowdb21 = db2_fetch_assoc($stmt1)) {
     ?>
               <tr>
                 <td style="text-align: center"><?php echo $no; ?></td>
-                <td style="text-align: center"><?php echo $rowdb21['TRANSACTIONDATE']; ?></td>
+                <td style="text-align: center"><?php echo $rowdb21['INTERNALREFERENCEDATE']; ?></td>
                 <td style="text-align: center">
                     <a href="javascript:void(0);" class="btn btn-link" onclick="openInNewTab('<?php echo $NoBon; ?>', '<?php echo $NoLine; ?>', '<?php echo $tanggalAwal; ?>', '<?php echo $tanggalAkhir; ?>')">
                         <?php echo $bon; ?>
